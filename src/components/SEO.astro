@@ -1,0 +1,214 @@
+---
+/**
+ * SEO.astro — every <head> tag that search engines, social platforms,
+ * and ad networks read. Rendered at build time into static HTML, so a
+ * crawler sees all of it in the very first response.
+ *
+ * Every page passes its own title and description. Nothing is generic.
+ */
+import { site } from "../config/site";
+import brand from "../data/brand.json";
+
+export interface Breadcrumb {
+  name: string;
+  url: string;
+}
+
+export interface Props {
+  /** Page title WITHOUT the site name — the suffix is added here. */
+  title: string;
+  /** Unique 120–160 character description. Never reuse across pages. */
+  description: string;
+  /** Override the social share image for this page. */
+  image?: string;
+  /** "website" for pages, "article" for blog posts. */
+  type?: "website" | "article";
+  /** Set true to keep a page out of search results (e.g. thank-you pages). */
+  noindex?: boolean;
+  /** Breadcrumb trail — emitted as BreadcrumbList structured data. */
+  breadcrumbs?: Breadcrumb[];
+  /** Article-only metadata. */
+  publishDate?: Date;
+  updatedDate?: Date;
+  author?: string;
+  /** Extra JSON-LD blocks to merge into the page's structured data. */
+  schema?: Record<string, unknown>[];
+}
+
+const {
+  title,
+  description,
+  image,
+  type = "website",
+  noindex = false,
+  breadcrumbs = [],
+  publishDate,
+  updatedDate,
+  author,
+  schema = [],
+} = Astro.props;
+
+// ── Canonical URL ────────────────────────────────────────────────
+// Built from Astro.url so it is always absolute and always matches the
+// page actually being served. Trailing slash normalised.
+const canonicalURL = new URL(Astro.url.pathname, site.url).href.replace(/(?<!:)\/+$/, "/");
+
+// Homepage shows just the brand + tagline; inner pages get "Page | Brand".
+const isHome = Astro.url.pathname === "/";
+const fullTitle = isHome
+  ? `${site.name} — ${site.tagline}`
+  : `${title} | ${site.name}`;
+
+const socialImage = new URL(image || site.ogImage, site.url).href;
+
+// ── Structured data ──────────────────────────────────────────────
+const orgId = `${site.url}/#organization`;
+
+const socialProfiles = Object.values(site.social).filter(Boolean);
+
+const organizationSchema = {
+  "@type": "ProfessionalService",
+  "@id": orgId,
+  name: site.name,
+  url: site.url,
+  description: site.description,
+  ...(socialProfiles.length ? { sameAs: socialProfiles } : {}),
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: site.address.city,
+    addressCountry: site.address.country,
+    ...(site.address.street ? { streetAddress: site.address.street } : {}),
+    ...(site.address.postalCode ? { postalCode: site.address.postalCode } : {}),
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: site.contact.phoneRaw,
+    email: site.contact.email,
+    contactType: "sales",
+    availableLanguage: ["English", "Arabic"],
+  },
+  areaServed: site.areaServed.map((a) => ({ "@type": "AdministrativeArea", name: a })),
+  knowsAbout: [
+    "Software development",
+    "Cloud computing",
+    "Artificial intelligence",
+    "Data analytics",
+    "Cybersecurity",
+    "ERP implementation",
+    "Digital transformation",
+  ],
+};
+
+const websiteSchema = {
+  "@type": "WebSite",
+  "@id": `${site.url}/#website`,
+  url: site.url,
+  name: site.name,
+  publisher: { "@id": orgId },
+  inLanguage: site.lang,
+};
+
+const breadcrumbSchema =
+  breadcrumbs.length > 0
+    ? {
+        "@type": "BreadcrumbList",
+        itemListElement: breadcrumbs.map((crumb, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: crumb.name,
+          item: new URL(crumb.url, site.url).href,
+        })),
+      }
+    : null;
+
+const articleSchema =
+  type === "article" && publishDate
+    ? {
+        "@type": "BlogPosting",
+        headline: title,
+        description,
+        image: socialImage,
+        datePublished: publishDate.toISOString(),
+        dateModified: (updatedDate || publishDate).toISOString(),
+        author: { "@type": "Organization", name: author || site.name, url: site.url },
+        publisher: { "@id": orgId },
+        mainEntityOfPage: { "@type": "WebPage", "@id": canonicalURL },
+        inLanguage: site.lang,
+      }
+    : null;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    organizationSchema,
+    websiteSchema,
+    ...(breadcrumbSchema ? [breadcrumbSchema] : []),
+    ...(articleSchema ? [articleSchema] : []),
+    ...schema,
+  ],
+};
+---
+
+<!-- ── Core ─────────────────────────────────────────────── -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+
+{
+  noindex ? (
+    <meta name="robots" content="noindex, nofollow" />
+  ) : (
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+  )
+}
+
+{
+  site.analytics.googleSiteVerification && (
+    <meta name="google-site-verification" content={site.analytics.googleSiteVerification} />
+  )
+}
+
+<!-- ── Open Graph (LinkedIn, Facebook, WhatsApp, Slack) ─── -->
+<meta property="og:type" content={type} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:site_name" content={site.name} />
+<meta property="og:image" content={socialImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={`${site.name} — ${site.tagline}`} />
+<meta property="og:locale" content={site.locale} />
+
+{
+  type === "article" && publishDate && (
+    <>
+      <meta property="article:published_time" content={publishDate.toISOString()} />
+      {updatedDate && (
+        <meta property="article:modified_time" content={updatedDate.toISOString()} />
+      )}
+      <meta property="article:author" content={author || site.name} />
+    </>
+  )
+}
+
+<!-- ── Twitter / X cards ────────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={socialImage} />
+{site.social.x && <meta name="twitter:site" content={site.social.x} />}
+
+<!-- ── Icons & feeds ────────────────────────────────────── -->
+<link rel="icon" type="image/png" href={brand.favicon} />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+<meta name="theme-color" content="#0b0f14" />
+
+<!-- ── Structured data (Google rich results) ────────────── -->
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />

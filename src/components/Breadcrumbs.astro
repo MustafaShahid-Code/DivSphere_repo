@@ -1,0 +1,28 @@
+---
+/**
+ * Visible breadcrumb trail. Pairs with the BreadcrumbList structured
+ * data emitted by SEO.astro — Google uses the two together to show a
+ * breadcrumb path in search results instead of a bare URL.
+ */
+export interface Props {
+  items: { name: string; url: string }[];
+}
+const { items } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb">
+  <ol class="breadcrumbs">
+    {
+      items.map((item, i) => (
+        <li>
+          {i > 0 && <span class="sep" aria-hidden="true">/</span>}
+          {i === items.length - 1 ? (
+            <span aria-current="page">{item.name}</span>
+          ) : (
+            <a href={item.url}>{item.name}</a>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>

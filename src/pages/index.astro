@@ -1,0 +1,231 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site, clusters } from "../config/site";
+import home from "../data/homepage.json";
+
+const services = (await getCollection("services", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const caseStudies = (await getCollection("caseStudies", ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+const testimonials = (await getCollection("testimonials", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+// All copy and section visibility below comes from src/data/homepage.json,
+// which is edited in the CMS under Site Settings → Homepage.
+const { hero, sections } = home;
+
+const serviceSchema = [
+  {
+    "@type": "ItemList",
+    name: `${site.name} services`,
+    itemListElement: clusters.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Service",
+        name: c.heading,
+        description: c.description,
+        provider: { "@id": `${site.url}/#organization` },
+      },
+    })),
+  },
+];
+---
+
+<BaseLayout title="Home" description={home.seo.description} schema={serviceSchema}>
+  <section>
+    <div class="wrap hero">
+      <div>
+        <span class="eyebrow">{hero.eyebrow}</span>
+        <h1>{hero.heading}</h1>
+        <p class="lede">{hero.lede}</p>
+        <div class="btn-row">
+          <a href="/contact" class="btn btn-primary">{hero.ctaPrimary} &rarr;</a>
+          <a href="/case-studies" class="btn btn-ghost">{hero.ctaSecondary}</a>
+        </div>
+        {
+          sections.heroStats && (
+            <div class="hero-stats">
+              {hero.stats.map((s) => (
+                <div class="hero-stat">
+                  <div class="num">{s.num}</div>
+                  <div class="label">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          )
+        }
+      </div>
+
+      <div class="orbit-wrap">
+        <svg class="orbit-svg" viewBox="0 0 300 300" role="img" aria-label="Diagram of DivSphere's capabilities orbiting a central delivery team">
+          <defs>
+            <radialGradient id="coreGrad" cx="35%" cy="35%">
+              <stop offset="0%" stop-color="var(--accent-strong)"></stop>
+              <stop offset="100%" stop-color="var(--accent)"></stop>
+            </radialGradient>
+          </defs>
+          <circle class="orbit-ring a" cx="150" cy="150" r="70"></circle>
+          <circle class="orbit-ring b" cx="150" cy="150" r="110"></circle>
+          <circle class="orbit-ring c" cx="150" cy="150" r="145"></circle>
+          <circle class="orbit-core" cx="150" cy="150" r="26"></circle>
+          <g class="orbit-ring a" style="animation-duration:46s;">
+            <g class="orbit-node"><circle cx="220" cy="150" r="20"></circle><text x="220" y="152" text-anchor="middle">CLOUD</text></g>
+          </g>
+          <g class="orbit-ring b" style="animation-duration:64s; animation-direction:reverse;">
+            <g class="orbit-node"><circle cx="150" cy="40" r="20"></circle><text x="150" y="42" text-anchor="middle">AI/ML</text></g>
+            <g class="orbit-node"><circle cx="150" cy="260" r="20"></circle><text x="150" y="262" text-anchor="middle">DATA</text></g>
+          </g>
+          <g class="orbit-ring c" style="animation-duration:90s;">
+            <g class="orbit-node"><circle cx="41" cy="97" r="22"></circle><text x="41" y="99" text-anchor="middle">BUILD</text></g>
+            <g class="orbit-node"><circle cx="259" cy="203" r="24"></circle><text x="259" y="205" text-anchor="middle">SECURITY</text></g>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    {
+      sections.capabilities && (
+        <div class="wrap" style="margin-top:88px;">
+          <div class="section-head reveal">
+            <div>
+              <span class="eyebrow">{home.capabilitiesIntro.eyebrow}</span>
+              <h2 style="margin-top:14px;">{home.capabilitiesIntro.heading}</h2>
+            </div>
+            <p class="lede">{home.capabilitiesIntro.lede}</p>
+          </div>
+          <div class="cluster-grid">
+            {clusters.map((c) => (
+              <div class="cluster-card reveal">
+                <span class="idx mono">{c.idx} / {c.tag}</span>
+                <h3>{c.short}</h3>
+                <p>{c.description}</p>
+                <div class="tags">
+                  {services
+                    .filter((s) => s.data.cluster === c.id)
+                    .slice(0, 4)
+                    .map((s) => (
+                      <span class="tag">{s.data.title}</span>
+                    ))}
+                </div>
+              </div>
+            ))}
+            <div class="cluster-card reveal" style="display:flex; flex-direction:column; justify-content:center; align-items:flex-start; background:transparent; border-style:dashed;">
+              <h3 style="margin-bottom:14px;">See the full breakdown</h3>
+              <a href="/services" class="btn btn-ghost">All services &rarr;</a>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    {
+      sections.process && (
+        <div class="wrap" style="margin-top:96px;">
+          <div class="section-head reveal">
+            <div>
+              <span class="eyebrow">{home.processIntro.eyebrow}</span>
+              <h2 style="margin-top:14px;">{home.processIntro.heading}</h2>
+            </div>
+          </div>
+          <div class="process-strip reveal">
+            {home.processSteps.map((step) => (
+              <div class="process-step">
+                <span class="idx mono">{step.idx}</span>
+                <h3 style="font-size:1rem; margin:12px 0 8px;">{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      sections.caseStudiesPreview && (
+        <div class="wrap" style="margin-top:96px;">
+          <div class="section-head reveal">
+            <div>
+              <span class="eyebrow">{home.caseStudiesIntro.eyebrow}</span>
+              <h2 style="margin-top:14px;">{home.caseStudiesIntro.heading}</h2>
+            </div>
+            <a href="/case-studies" class="btn btn-ghost">All case studies &rarr;</a>
+          </div>
+          <div class="case-grid">
+            {caseStudies.map((cs) => (
+              <a href={`/case-studies/${cs.id}`} class="case-card reveal">
+                <div class="case-visual"><span class="mono">// {cs.data.sector.toUpperCase()}</span></div>
+                <div class="case-body">
+                  <span class="case-sector">{cs.data.sector} &middot; {cs.data.category}</span>
+                  <h3>{cs.data.title}</h3>
+                  <p>{cs.data.description}</p>
+                  <div class="case-metric">{cs.data.metric}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      sections.testimonials && testimonials.length > 0 && (
+        <div class="wrap" style="margin-top:96px;">
+          <div class="section-head reveal">
+            <div>
+              <span class="eyebrow">{home.testimonialsIntro.eyebrow}</span>
+              <h2 style="margin-top:14px;">{home.testimonialsIntro.heading}</h2>
+            </div>
+          </div>
+          <div class="testimonial-grid">
+            {testimonials.map((t) => (
+              <figure class="testimonial-card reveal" style="margin:0;">
+                <blockquote class="testimonial-quote" style="margin:0;">{t.data.quote}</blockquote>
+                <figcaption class="testimonial-who">
+                  <span class="testimonial-name">{t.data.name}</span>
+                  <span class="testimonial-role">{t.data.role}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      sections.industries && (
+        <div class="wrap" style="margin-top:96px;">
+          <div class="section-head reveal" style="margin-bottom:28px;">
+            <div>
+              <span class="eyebrow">{home.industriesIntro.eyebrow}</span>
+              <h2 style="margin-top:14px;">{home.industriesIntro.heading}</h2>
+            </div>
+          </div>
+          <div class="industries-strip reveal">
+            {home.industries.map((i) => <span class="industry-pill">{i}</span>)}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      sections.ctaBand && (
+        <div class="wrap" style="margin-top:96px; padding-bottom:96px;">
+          <div class="cta-band reveal">
+            <span class="eyebrow" style="justify-content:center;">{home.ctaBand.eyebrow}</span>
+            <h2 style="margin-top:14px;">{home.ctaBand.heading}</h2>
+            <p>{home.ctaBand.body}</p>
+            <div class="btn-row">
+              <a href="/contact" class="btn btn-primary">{hero.ctaPrimary} &rarr;</a>
+              <a href="/services" class="btn btn-ghost">{home.ctaBand.buttonSecondary}</a>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

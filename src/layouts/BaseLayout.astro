@@ -1,0 +1,101 @@
+---
+/**
+ * BaseLayout.astro — the document shell every page renders into.
+ * Produces complete, crawlable HTML at build time.
+ */
+import SEO, { type Breadcrumb } from "../components/SEO.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import Analytics from "../components/Analytics.astro";
+import ConsentBanner from "../components/ConsentBanner.astro";
+import { site, resolveTheme } from "../config/site";
+import themeData from "../data/theme.json";
+
+// The accent palette is chosen in the CMS (Site Settings → Theme) and
+// baked into the page as CSS custom properties at build time — no
+// runtime JavaScript, no flash of the wrong colour.
+const theme = resolveTheme(themeData.palette);
+const themeVars = [
+  `--accent:${theme.accent}`,
+  `--accent-strong:${theme.accentStrong}`,
+  `--accent-soft:${theme.accentSoft}`,
+  `--accent-line:${theme.accentLine}`,
+  `--on-accent:${theme.onAccent}`,
+].join(";");
+
+// Self-hosted variable fonts. Serving these from our own origin rather
+// than Google Fonts removes a third-party connection from the critical
+// path, which measurably improves Largest Contentful Paint.
+import "@fontsource-variable/bricolage-grotesque";
+import "@fontsource-variable/manrope";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
+import "../styles/global.css";
+
+export interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  type?: "website" | "article";
+  noindex?: boolean;
+  breadcrumbs?: Breadcrumb[];
+  publishDate?: Date;
+  updatedDate?: Date;
+  author?: string;
+  schema?: Record<string, unknown>[];
+}
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.lang} style={themeVars}>
+  <head>
+    <SEO {...props} />
+    <Analytics />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    {
+      site.analytics.gtmId && import.meta.env.PROD && (
+        <noscript set:html={`<iframe src="https://www.googletagmanager.com/ns.html?id=${site.analytics.gtmId}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`} />
+      )
+    }
+
+    <Nav />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+    <ConsentBanner />
+
+    <script>
+      // Scroll-reveal animations, enabled only once JS is confirmed running.
+      // The `js-reveal` class is what switches the CSS from "always visible"
+      // to "fade in on scroll" — so no-JS visitors and crawlers still see
+      // every element.
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (!reduceMotion) {
+        document.documentElement.classList.add("js-reveal");
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("in");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+        );
+
+        document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>

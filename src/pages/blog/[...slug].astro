@@ -1,0 +1,83 @@
+---
+import { getCollection, render } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+
+/**
+ * Generates one static HTML page per blog post at build time.
+ * This is the single biggest SEO gain over the hash-routed preview:
+ * every article becomes its own indexable, shareable, rankable URL.
+ */
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+};
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "Blog", url: "/blog" },
+  { name: post.data.title, url: `/blog/${post.id}` },
+];
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+---
+
+<BaseLayout
+  title={post.data.seoTitle || post.data.title}
+  description={post.data.seoDescription || post.data.excerpt}
+  type="article"
+  breadcrumbs={crumbs}
+  publishDate={post.data.publishDate}
+  updatedDate={post.data.updatedDate}
+  author={post.data.author}
+>
+  <article>
+    <div class="article-hero">
+      <div class="wrap">
+        <Breadcrumbs items={crumbs} />
+        <span class="eyebrow">{post.data.category}</span>
+        <h1>{post.data.title}</h1>
+        <div class="article-meta">
+          <time datetime={post.data.publishDate.toISOString()}>
+            {fmt(post.data.publishDate)}
+          </time>
+          <span class="dot" aria-hidden="true">&middot;</span>
+          <span>{post.data.readTime}</span>
+          <span class="dot" aria-hidden="true">&middot;</span>
+          <span>{post.data.author}</span>
+          {
+            post.data.updatedDate && (
+              <>
+                <span class="dot" aria-hidden="true">&middot;</span>
+                <span>
+                  Updated <time datetime={post.data.updatedDate.toISOString()}>{fmt(post.data.updatedDate)}</time>
+                </span>
+              </>
+            )
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="article-footer">
+        <a href="/blog" class="btn btn-ghost">&larr; All insights</a>
+        <a href="/contact" class="btn btn-primary">Talk to our team &rarr;</a>
+      </div>
+    </div>
+  </article>
+</BaseLayout>

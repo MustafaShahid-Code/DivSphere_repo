@@ -1,0 +1,56 @@
+---
+import { site, clusters } from "../config/site";
+import brand from "../data/brand.json";
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="brand" style="margin-bottom:14px;">
+          <img class="brand-mark" src={brand.logoMark} alt="" width="30" height="30" />
+          <span class="brand-word">Div<span>Sphere</span></span>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.9rem; max-width:280px;">
+          Software, cloud, and data infrastructure for companies that need a technology partner who ships.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/case-studies">Case Studies</a></li>
+          <li><a href="/careers">Careers</a></li>
+          <li><a href="/blog">Blog</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          {clusters.slice(0, 4).map((c) => (
+            <li><a href="/services">{c.heading}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
+          <li><a href={`tel:${site.contact.phoneRaw}`}>{site.contact.phone}</a></li>
+          <li><a href="/contact">{site.address.city}, {site.address.countryName}</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; {year} {site.name}. All rights reserved.</span>
+      <span class="mono" style="color:var(--text-faint);">
+        Brand identity placeholder — not finalised
+      </span>
+    </div>
+  </div>
+</footer>

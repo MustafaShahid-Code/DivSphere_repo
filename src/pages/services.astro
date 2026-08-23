@@ -1,0 +1,96 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { site, clusters } from "../config/site";
+
+const services = (await getCollection("services", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "Services", url: "/services" },
+];
+
+// Each individual service becomes a Service entity so Google can surface
+// them for specific queries ("ERP implementation Qatar", etc).
+const schema = [
+  {
+    "@type": "ItemList",
+    name: `${site.name} service lines`,
+    numberOfItems: services.length,
+    itemListElement: services.map((s, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Service",
+        name: s.data.title,
+        description: s.data.description,
+        serviceType: clusters.find((c) => c.id === s.data.cluster)?.heading,
+        provider: { "@id": `${site.url}/#organization` },
+        areaServed: site.areaServed.map((a) => ({ "@type": "AdministrativeArea", name: a })),
+      },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Services"
+  description={`${services.length} IT and software service lines across seven capabilities — development, cloud, AI, ERP/CRM, UI/UX, cybersecurity, and support.`}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <div class="page-hero">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <span class="eyebrow">Services</span>
+      <h1>Everything you need, one accountable delivery team.</h1>
+      <p class="lede">
+        {services.length} service lines, organized into seven capabilities. Engage us for one, or hand
+        over an entire technology function.
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    {
+      clusters.map((c) => {
+        const items = services.filter((s) => s.data.cluster === c.id);
+        if (items.length === 0) return null;
+        return (
+          <div class="service-cluster" id={c.id}>
+            <div class="service-cluster-head">
+              <div>
+                <span class="idx">{c.idx} / {c.short.toUpperCase()}</span>
+                <h2>{c.heading}</h2>
+              </div>
+              <div class="service-list">
+                {items.map((s) => (
+                  <div class="service-item">
+                    <h3 style="font-size:0.96rem; font-family:var(--font-display); font-weight:700; margin-bottom:6px;">
+                      {s.data.title}
+                    </h3>
+                    <p>{s.data.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })
+    }
+  </div>
+
+  <div class="wrap" style="margin-top:24px; margin-bottom:96px;">
+    <div class="cta-band reveal">
+      <span class="eyebrow" style="justify-content:center;">Not sure where to start?</span>
+      <h2 style="margin-top:14px;">Tell us the problem, not the service line.</h2>
+      <p>Most engagements span more than one capability. We'll help you scope it.</p>
+      <div class="btn-row">
+        <a href="/contact" class="btn btn-primary">Talk to us &rarr;</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

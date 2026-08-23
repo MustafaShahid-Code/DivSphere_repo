@@ -1,0 +1,412 @@
+/**
+ * ADMIN THEME — restyles the bundled Decap CMS to match the DevSphere
+ * brand instead of its stock light UI.
+ *
+ * Decap CMS doesn't expose an official theming API for its editor
+ * chrome (only `CMS.registerPreviewStyle()` for the live-preview pane).
+ * What it DOES do is build its components with Emotion using readable
+ * labels — e.g. a class like `css-z4lojk-AppHeader` — and those labels
+ * are baked into the shipped `decap-cms-app` package, not just a dev
+ * artifact. That makes `[class*="ComponentName"]` a reasonably stable
+ * hook: it survives the hash suffix changing between installs, and
+ * only breaks if Decap renames the component itself.
+ *
+ * This is best-effort, not an official theme surface. If a future
+ * decap-cms-app upgrade renames a component, that one selector stops
+ * matching and that element quietly falls back to Decap's default
+ * light styling rather than breaking anything.
+ */
+
+/* ============== Base canvas ============== */
+
+.admin-body {
+  font-family: var(--font-body);
+}
+
+.admin-body::before {
+  display: none;
+}
+
+#nc-root,
+[class*="AppMainContainer"] {
+  background: var(--ground) !important;
+  min-height: 100vh;
+}
+
+/* ============== Top header bar ============== */
+
+[class*="AppHeader"]:not([class*="AppHeaderButton"]):not([class*="AppHeaderNavLink"]):not([class*="AppHeaderSiteLink"]):not([class*="AppHeaderQuickNewButton"]) {
+  background: var(--surface-raised) !important;
+  border-bottom: 1px solid var(--line) !important;
+  box-shadow: none !important;
+}
+
+[class*="AppHeaderContent"] {
+  color: var(--text) !important;
+}
+
+[class*="AppHeaderSiteLink"] {
+  color: var(--text) !important;
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+}
+
+[class*="AppHeaderNavLink"] {
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
+}
+
+[class*="AppHeaderNavLink"]:hover {
+  color: var(--text) !important;
+}
+
+[class*="header-link-active"],
+[class*="AppHeaderButton"][class*="buttonActive"] {
+  color: var(--accent) !important;
+  box-shadow: inset 0 -2px 0 var(--accent) !important;
+  background: transparent !important;
+}
+
+[class*="AppHeaderActions"] {
+  color: var(--text-muted) !important;
+}
+
+[class*="StyledDropdownButton"],
+[class*="AppHeaderQuickNewButton"] {
+  background: var(--accent) !important;
+  color: var(--on-accent) !important;
+  border-radius: 7px !important;
+  font-weight: 700 !important;
+  border: none !important;
+}
+
+[class*="StyledDropdownButton"]:hover {
+  background: var(--accent-strong) !important;
+}
+
+[class*="AvatarDropdownButton"] {
+  color: var(--text-muted) !important;
+}
+
+/* ============== Sidebar (collections list) ============== */
+
+[class*="SidebarContainer"] {
+  background: transparent !important;
+}
+
+[class*="SidebarHeading"] {
+  color: var(--text) !important;
+  font-family: var(--font-display) !important;
+}
+
+[class*="SidebarNavList"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+[class*="SidebarNavLink"] {
+  color: var(--text-muted) !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+}
+
+[class*="SidebarNavLink"]:hover {
+  color: var(--text) !important;
+  background: var(--surface-raised) !important;
+}
+
+[class*="sidebar-active"] {
+  color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  box-shadow: inset 3px 0 0 var(--accent) !important;
+}
+
+/* ============== Search + view controls ============== */
+
+[class*="SearchContainer"],
+[class*="SearchInput"],
+[class*="InputContainer"] {
+  background: var(--surface) !important;
+  border-color: var(--line) !important;
+  color: var(--text) !important;
+}
+
+[class*="SearchInput"] input,
+[class*="InputContainer"] input {
+  color: var(--text) !important;
+}
+
+[class*="ViewControlsButton"] {
+  color: var(--text-muted) !important;
+}
+
+[class*="ViewControlsButton"]:hover,
+[class*="ViewControlsButton"][class*="active"] {
+  color: var(--accent) !important;
+}
+
+/* ============== Collection list + cards ============== */
+
+[class*="CollectionTopContainer"],
+[class*="CollectionTopRow"],
+[class*="CollectionTopHeading"] {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-color: var(--line) !important;
+}
+
+[class*="CollectionTopHeading"] {
+  font-family: var(--font-display) !important;
+}
+
+[class*="ListCard"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+[class*="ListCard"]:hover {
+  border-color: var(--accent-line) !important;
+  transform: translateY(-1px);
+}
+
+[class*="ListCardTitle"],
+[class*="ListCardLink"] {
+  color: var(--text) !important;
+}
+
+[class*="CardsGrid"] [class*="ListCard"] {
+  background: var(--surface) !important;
+}
+
+/* ============== Entry editor: toolbar ============== */
+
+[class*="ToolbarContainer"] {
+  background: var(--surface-raised) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+[class*="ToolbarSection"] {
+  color: var(--text-muted) !important;
+}
+
+[class*="BackArrow"],
+[class*="BackCollection"] {
+  color: var(--text) !important;
+}
+
+[class*="BackStatus"] {
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+}
+
+[class*="ToolbarButton"] {
+  color: var(--text-muted) !important;
+  border-radius: 7px !important;
+}
+
+[class*="ToolbarButton"]:hover {
+  color: var(--text) !important;
+  background: var(--surface) !important;
+}
+
+[class*="PublishedButton"],
+[class*="ToolbarButton"][class*="success"] {
+  background: var(--accent) !important;
+  color: var(--on-accent) !important;
+}
+
+[class*="PreviewButtonContainer"] a,
+[class*="PreviewLink"] {
+  color: var(--accent) !important;
+}
+
+/* ============== Entry editor: fields ============== */
+
+[class*="EditorContainer"] {
+  background: var(--ground) !important;
+}
+
+[class*="ControlPaneContainer"] {
+  background: var(--ground) !important;
+}
+
+[class*="ControlTopbar"] {
+  background: var(--surface-raised) !important;
+  border-color: var(--line) !important;
+}
+
+[class*="FieldLabel"] {
+  background: var(--surface) !important;
+  color: var(--text-muted) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[class*="ControlContainer"] {
+  color: var(--text) !important;
+}
+
+[class*="ControlContainer"] input[type="text"],
+[class*="ControlContainer"] input[type="number"],
+[class*="ControlContainer"] input[type="email"],
+[class*="ControlContainer"] input[type="url"],
+[class*="ControlContainer"] input[type="date"],
+[class*="ControlContainer"] input[type="datetime-local"],
+[class*="ControlContainer"] textarea,
+[class*="ControlContainer"] select {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  color: var(--text) !important;
+  font-family: var(--font-body) !important;
+}
+
+[class*="ControlContainer"] input:focus,
+[class*="ControlContainer"] textarea:focus,
+[class*="ControlContainer"] select:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+/* react-select widgets (the "select" / "relation" field types),
+   scoped to the field area so this doesn't leak elsewhere. */
+[class*="ControlContainer"] [class$="-control"] {
+  background: var(--surface) !important;
+  border-color: var(--line) !important;
+  border-radius: 8px !important;
+}
+
+[class*="ControlContainer"] [class$="-singleValue"],
+[class*="ControlContainer"] [class$="-input"],
+[class*="ControlContainer"] [class$="-placeholder"] {
+  color: var(--text) !important;
+}
+
+[class*="ControlContainer"] [class$="-menu"] {
+  background: var(--surface-raised) !important;
+  border: 1px solid var(--line) !important;
+}
+
+[class*="ControlContainer"] [class$="-option"] {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+[class*="ControlContainer"] [class*="-option"]:hover {
+  background: var(--accent-soft) !important;
+}
+
+/* Image widgets (logo, favicon, media fields) */
+[class*="ImageWrapper"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+}
+
+[class*="FileWidgetButton"]:not([class*="Remove"]) {
+  background: var(--surface-raised) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+}
+
+[class*="FileWidgetButton"]:not([class*="Remove"]):hover {
+  border-color: var(--accent-line) !important;
+  color: var(--accent) !important;
+}
+
+[class*="FileWidgetButtonRemove"] {
+  background: rgba(255, 92, 92, 0.12) !important;
+  color: #ff9d9d !important;
+  border: 1px solid rgba(255, 92, 92, 0.35) !important;
+}
+
+/* Markdown / rich-text (Slate) editor surface */
+[data-slate-editor="true"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  color: var(--text) !important;
+  padding: 14px !important;
+}
+
+/* ============== Preview pane ============== */
+
+[class*="PreviewPaneContainer"] {
+  background: var(--surface) !important;
+  border-left: 1px solid var(--line) !important;
+  color: var(--text) !important;
+}
+
+/* ============== Decap's own local-backend login screen ============== */
+
+[class*="StyledAuthenticationPage"] {
+  background: var(--ground) !important;
+}
+
+[class*="AuthForm"] {
+  background: var(--surface-raised) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 64px -24px rgba(0, 0, 0, 0.6) !important;
+}
+
+[class*="AuthInput"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--text) !important;
+  border-radius: 8px !important;
+}
+
+[class*="LoginButton"] {
+  background: var(--accent) !important;
+  color: var(--on-accent) !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+}
+
+[class*="LoginButton"]:hover {
+  background: var(--accent-strong) !important;
+}
+
+[class*="GoBackButtonStyle"] {
+  color: var(--text-muted) !important;
+}
+
+[class*="ErrorMessage"] {
+  color: #ff9d9d !important;
+}
+
+/* ============== Modals (media library, etc.) ============== */
+
+.ReactModalPortal [class*="Card"],
+.ReactModalPortal [role="dialog"] {
+  background: var(--surface-raised) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--line) !important;
+}
+
+/* ============== Scrollbars ============== */
+
+#nc-root ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#nc-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#nc-root ::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 6px;
+}
+
+#nc-root ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}

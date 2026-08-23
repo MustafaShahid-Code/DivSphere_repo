@@ -1,0 +1,81 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { site } from "../../config/site";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+);
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "About", url: "/about" },
+  { name: "Blog", url: "/blog" },
+];
+
+const schema = [
+  {
+    "@type": "Blog",
+    "@id": `${site.url}/blog/#blog`,
+    name: `${site.name} Insights`,
+    description: "Field notes on software delivery, cloud, data, and security.",
+    url: `${site.url}/blog`,
+    publisher: { "@id": `${site.url}/#organization` },
+    blogPost: posts.map((p) => ({
+      "@type": "BlogPosting",
+      headline: p.data.title,
+      url: `${site.url}/blog/${p.id}`,
+      datePublished: p.data.publishDate.toISOString(),
+      author: { "@type": "Organization", name: p.data.author },
+    })),
+  },
+];
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+---
+
+<BaseLayout
+  title="Insights"
+  description="Field notes from our delivery team on cloud migrations, ERP rollouts, applied machine learning, penetration testing, and scoping software projects."
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <div class="page-hero">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <span class="eyebrow">Insights</span>
+      <h1>Notes from delivery.</h1>
+      <p class="lede">
+        Field notes from the engagements we run — what worked, what didn't, and what we'd tell a
+        client before they start.
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:64px 0 96px;">
+    <div class="blog-grid">
+      {
+        posts.map((post) => (
+          <article class="blog-card reveal">
+            <a href={`/blog/${post.id}`} style="text-decoration:none; color:inherit; display:flex; flex-direction:column; height:100%;">
+              <div class="blog-visual"></div>
+              <div class="blog-body">
+                <span class="blog-cat">{post.data.category}</span>
+                <h2 style="font-size:1.02rem; font-family:var(--font-display);">{post.data.title}</h2>
+                <p>{post.data.excerpt}</p>
+                <span class="blog-meta">
+                  <time datetime={post.data.publishDate.toISOString()}>
+                    {fmt(post.data.publishDate)}
+                  </time>
+                  &nbsp;&middot;&nbsp;{post.data.readTime}
+                </span>
+              </div>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

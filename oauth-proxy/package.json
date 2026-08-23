@@ -1,0 +1,17 @@
+{
+  "name": "divsphere-cms-oauth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted GitHub OAuth proxy for Decap CMS — lets the CMS at /admin log editors in with GitHub, with no Netlify account involved.",
+  "type": "commonjs",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

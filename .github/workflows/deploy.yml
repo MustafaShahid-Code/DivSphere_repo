@@ -1,0 +1,60 @@
+name: Build and deploy to Hostinger
+
+# Hostinger's own Git deployment feature can pull a branch straight
+# into public_html, but it can't run a build step — it just copies
+# files. So this workflow does the part Hostinger can't: on every
+# push to main (including a commit the CMS makes when someone
+# publishes), it builds the Astro site and pushes the *output* to a
+# separate branch (`site-live`) that contains nothing but ready-to-serve
+# HTML/CSS/JS. Point Hostinger's Git deployment at that branch — see
+# README.md → "Going live" — and every publish goes live within a
+# couple of minutes with nothing manual.
+#
+# This workflow does not touch Hostinger directly and needs no
+# Hostinger credentials — it only ever pushes to a branch in this
+# same GitHub repo.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the site
+        run: npm run build
+        env:
+          # Set the real domain here via a GitHub Actions repo variable
+          # (Settings → Secrets and variables → Actions → Variables) —
+          # canonical URLs and the sitemap are generated from this.
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
+          PUBLIC_GTM_ID: ${{ vars.PUBLIC_GTM_ID }}
+          PUBLIC_GA4_ID: ${{ vars.PUBLIC_GA4_ID }}
+          PUBLIC_META_PIXEL_ID: ${{ vars.PUBLIC_META_PIXEL_ID }}
+          PUBLIC_LINKEDIN_PARTNER_ID: ${{ vars.PUBLIC_LINKEDIN_PARTNER_ID }}
+          PUBLIC_GOOGLE_SITE_VERIFICATION: ${{ vars.PUBLIC_GOOGLE_SITE_VERIFICATION }}
+
+      - name: Publish dist/ to the site-live branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: site-live
+          publish_dir: ./dist
+          force_orphan: true
+          commit_message: "deploy: ${{ github.event.head_commit.message }}"

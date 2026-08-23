@@ -1,0 +1,38 @@
+{
+  "hero": {
+    "eyebrow": "About DivSphere",
+    "heading": "Built by engineers who got tired of hand-offs.",
+    "lede": "DivSphere started as a small delivery team frustrated by how much gets lost between the consultants who scope a project and the developers who build it. We closed that gap by keeping both under one roof."
+  },
+  "seo": {
+    "description": "A Doha-based software and IT services company built by engineers who kept consulting and delivery under one roof. Meet the team behind the work."
+  },
+  "valuesIntro": { "eyebrow": "Values", "heading": "What we hold ourselves to." },
+  "values": [
+    { "title": "Own the outcome", "body": "We measure success by what changes for you after go-live, not by hours billed." },
+    { "title": "Show the work", "body": "Working software every sprint, not a status deck. You see progress before you see an invoice." },
+    { "title": "Default to secure", "body": "Security review is part of delivery, not an afterthought bolted on before launch." },
+    { "title": "Write it down", "body": "Documentation and clean handover so your team is never dependent on ours." }
+  ],
+  "milestonesIntro": { "eyebrow": "Milestones", "heading": "How we got here." },
+  "milestones": [
+    { "year": "Year 1", "title": "Founded as a software development studio", "body": "Started with a small team delivering custom web and mobile applications for regional clients." },
+    { "year": "Year 2", "title": "Added cloud & data practice", "body": "Brought cloud architecture and data analytics in-house as client infrastructure needs grew past what off-the-shelf hosting could handle." },
+    { "year": "Year 3", "title": "Launched enterprise systems & security practice", "body": "Formed dedicated ERP/CRM and cybersecurity teams to support larger, regulated clients." },
+    { "year": "Year 4", "title": "Opened cross-border delivery", "body": "Began exporting IT and software services under applicable regional licensing, serving clients across multiple markets." },
+    { "year": "Today", "title": "Full-stack technology partner", "body": "Seven capabilities, one delivery team, engagements ranging from single features to enterprise-wide transformation." }
+  ],
+  "teamIntro": {
+    "eyebrow": "The team",
+    "heading": "Depth across the stack.",
+    "lede": "DivSphere is organized around practice areas, not job titles — every engagement is staffed by people who've shipped that exact kind of system before."
+  },
+  "expertise": [
+    { "tag": "ENGINEERING", "title": "Engineering leadership", "body": "Backgrounds in distributed systems, enterprise SaaS, and high-throughput backend architecture." },
+    { "tag": "DATA & AI", "title": "Applied data science", "body": "Practitioners who have taken ML models from notebook to production, not just research." },
+    { "tag": "SECURITY", "title": "Security & compliance", "body": "Hands-on experience with penetration testing and regulated-industry compliance frameworks." },
+    { "tag": "DESIGN", "title": "Product design", "body": "UX researchers and designers who work inside the same sprint as engineering, not ahead of it." },
+    { "tag": "DELIVERY", "title": "Program management", "body": "Delivery leads accountable for scope, timeline, and budget across every engagement." },
+    { "tag": "ADVISORY", "title": "Technology strategy", "body": "Former CTOs and IT directors who advise on the decisions that outlast any one project." }
+  ]
+}

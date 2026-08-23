@@ -1,0 +1,116 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { site } from "../config/site";
+import careers from "../data/careers.json";
+
+const roles = (await getCollection("careers", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "About", url: "/about" },
+  { name: "Careers", url: "/careers" },
+];
+
+/**
+ * JobPosting structured data makes roles eligible for Google Jobs.
+ * NOTE: dates are generated at build time. Google may drop stale
+ * postings, so rebuild periodically or promote these to CMS fields.
+ */
+const now = new Date();
+const validThrough = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
+
+const schema = roles.map((r) => ({
+  "@type": "JobPosting",
+  title: r.data.title,
+  description: `${r.data.title} — ${r.data.department} at ${site.name}. ${r.data.employmentType}, ${r.data.location}.`,
+  datePosted: now.toISOString().split("T")[0],
+  validThrough: validThrough.toISOString().split("T")[0],
+  employmentType: r.data.employmentType.toUpperCase().replace(/[^A-Z]/g, "_"),
+  hiringOrganization: { "@type": "Organization", name: site.name, sameAs: site.url },
+  jobLocation: {
+    "@type": "Place",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: site.address.city,
+      addressCountry: site.address.country,
+    },
+  },
+  directApply: true,
+}));
+---
+
+<BaseLayout
+  title="Careers"
+  description={careers.seo.description}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <div class="page-hero">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <span class="eyebrow">{careers.hero.eyebrow}</span>
+      <h1>{careers.hero.heading}</h1>
+      <p class="lede">{careers.hero.lede}</p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:88px 0 0;">
+    <div class="section-head reveal">
+      <div>
+        <span class="eyebrow">{careers.benefitsIntro.eyebrow}</span>
+        <h2 style="margin-top:14px;">{careers.benefitsIntro.heading}</h2>
+      </div>
+    </div>
+    <div class="benefits-grid">
+      {
+        careers.benefits.map((b) => (
+          <div class="benefit-card reveal">
+            <h3 style="font-size:0.94rem; margin-bottom:6px; font-family:var(--font-display);">{b.title}</h3>
+            <p>{b.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:96px 0 96px;">
+    <div class="section-head reveal">
+      <div>
+        <span class="eyebrow">{careers.rolesIntro.eyebrow}</span>
+        <h2 style="margin-top:14px;">{careers.rolesIntro.heading}</h2>
+      </div>
+    </div>
+
+    {
+      roles.length > 0 ? (
+        <div class="role-list reveal">
+          {roles.map((r) => (
+            <a href="/contact" class="role-row">
+              <h3 style="font-size:1rem; font-family:var(--font-display);">{r.data.title}</h3>
+              <span class="role-meta">{r.data.department.toUpperCase()}</span>
+              <span class="role-meta">
+                {r.data.employmentType.toUpperCase()} &middot; {r.data.location.toUpperCase()}
+              </span>
+              <span class="role-arrow">Apply &rarr;</span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p style="color:var(--text-muted);">
+          No open roles right now — but we're always glad to hear from good people.
+        </p>
+      )
+    }
+
+    <p class="form-note reveal" style="margin-top:20px;">
+      {careers.noFitText}
+      <a href="/contact" style="color:var(--accent); text-decoration:none;">
+        {careers.noFitLinkText} &rarr;
+      </a>
+    </p>
+  </div>
+</BaseLayout>

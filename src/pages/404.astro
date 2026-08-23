@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Page not found"
+  description="The page you're looking for doesn't exist or has moved."
+  noindex={true}
+>
+  <div class="wrap">
+    <div class="notfound">
+      <span class="code mono">404</span>
+      <h1>That page isn't here.</h1>
+      <p>
+        The link may be out of date, or the page may have moved. Here's the way back.
+      </p>
+      <div class="btn-row">
+        <a href="/" class="btn btn-primary">Back to home &rarr;</a>
+        <a href="/services" class="btn btn-ghost">Browse services</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

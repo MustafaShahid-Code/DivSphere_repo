@@ -1,0 +1,83 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+
+const caseStudies = (await getCollection("caseStudies", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const categories = [...new Set(caseStudies.map((cs) => cs.data.category))];
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "About", url: "/about" },
+  { name: "Case Studies", url: "/case-studies" },
+];
+---
+
+<BaseLayout
+  title="Case Studies"
+  description="Selected DivSphere work across fintech, logistics, healthcare, banking, and retail — cloud migrations, ERP rollouts, AI models, and security audits."
+  breadcrumbs={crumbs}
+>
+  <div class="page-hero">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <span class="eyebrow">Case Studies</span>
+      <h1>Selected engagements.</h1>
+      <p class="lede">
+        A sample of the work — representative of engagement types across our seven capabilities.
+        Full case studies with client details available on request under NDA.
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding-top:56px;">
+    <!--
+      Filtering is client-side progressive enhancement. Every card is
+      present in the HTML, so crawlers index all of them regardless.
+    -->
+    <div class="filter-row">
+      <button class="filter-pill active" type="button" data-filter="all">All</button>
+      {categories.map((cat) => (
+        <button class="filter-pill" type="button" data-filter={cat}>{cat}</button>
+      ))}
+    </div>
+
+    <div class="case-grid" id="caseGrid" style="margin-bottom:96px;">
+      {
+        caseStudies.map((cs) => (
+          <article class="case-card reveal" data-category={cs.data.category}>
+            <a href={`/case-studies/${cs.id}`} style="text-decoration:none; color:inherit; display:flex; flex-direction:column; height:100%;">
+              <div class="case-visual"><span class="mono">// {cs.data.sector.toUpperCase()}</span></div>
+              <div class="case-body">
+                <span class="case-sector">{cs.data.sector} &middot; {cs.data.category}</span>
+                <h2 style="font-size:1.08rem; font-family:var(--font-display);">{cs.data.title}</h2>
+                <p>{cs.data.description}</p>
+                <div class="case-metric">{cs.data.metric}</div>
+              </div>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const pills = document.querySelectorAll<HTMLButtonElement>(".filter-pill");
+  const cards = document.querySelectorAll<HTMLElement>("#caseGrid .case-card");
+
+  pills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+      pills.forEach((p) => p.classList.remove("active"));
+      pill.classList.add("active");
+      const filter = pill.dataset.filter;
+      cards.forEach((card) => {
+        const match = filter === "all" || card.dataset.category === filter;
+        card.style.display = match ? "" : "none";
+      });
+    });
+  });
+</script>

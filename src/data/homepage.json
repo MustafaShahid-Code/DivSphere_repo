@@ -1,0 +1,98 @@
+{
+  "hero": {
+    "eyebrow": "Software & IT Services",
+    "heading": "Engineering the systems ambitious companies run on.",
+    "lede": "DivSphere designs, builds, and operates software, cloud, and data infrastructure for teams who need a technology partner that ships — not just advises. From a single product to enterprise-wide transformation.",
+    "ctaPrimary": "Start a project",
+    "ctaSecondary": "View our work",
+    "stats": [
+      {
+        "num": "120+",
+        "label": "Systems shipped"
+      },
+      {
+        "num": "40+",
+        "label": "Engineers & consultants"
+      },
+      {
+        "num": "18",
+        "label": "Countries served"
+      }
+    ]
+  },
+  "sections": {
+    "heroStats": true,
+    "capabilities": true,
+    "process": true,
+    "caseStudiesPreview": true,
+    "testimonials": true,
+    "industries": true,
+    "ctaBand": true
+  },
+  "capabilitiesIntro": {
+    "eyebrow": "What we do",
+    "heading": "Seven capabilities, one delivery team.",
+    "lede": "Every engagement draws on the same bench of engineers, architects, and consultants — so a cloud migration and the analytics layer on top of it come from one accountable team."
+  },
+  "processIntro": {
+    "eyebrow": "How we work",
+    "heading": "A five-stage delivery process."
+  },
+  "processSteps": [
+    {
+      "idx": "01",
+      "title": "Discover",
+      "body": "Stakeholder interviews, technical audit, and a scoped delivery plan."
+    },
+    {
+      "idx": "02",
+      "title": "Design",
+      "body": "Architecture, UX, and data models validated before a line of production code is written."
+    },
+    {
+      "idx": "03",
+      "title": "Build",
+      "body": "Iterative delivery in two-week cycles, with a working build in your hands from sprint one."
+    },
+    {
+      "idx": "04",
+      "title": "Deploy",
+      "body": "Staged rollout, load testing, and security review ahead of go-live."
+    },
+    {
+      "idx": "05",
+      "title": "Support",
+      "body": "SLA-backed monitoring, on-call support, and a roadmap for what's next."
+    }
+  ],
+  "caseStudiesIntro": {
+    "eyebrow": "Selected work",
+    "heading": "Recent engagements."
+  },
+  "testimonialsIntro": {
+    "eyebrow": "Client feedback",
+    "heading": "What clients say."
+  },
+  "industriesIntro": {
+    "eyebrow": "Industries",
+    "heading": "Domain depth, not just delivery."
+  },
+  "industries": [
+    "Financial Services",
+    "Healthcare",
+    "Logistics",
+    "Retail & E-commerce",
+    "Public Sector",
+    "Manufacturing",
+    "Energy"
+  ],
+  "ctaBand": {
+    "eyebrow": "Let's talk",
+    "heading": "Have a system that needs building — or fixing?",
+    "body": "Tell us where it's breaking down. We'll respond within one business day with next steps.",
+    "buttonSecondary": "Browse services"
+  },
+  "seo": {
+    "description": "Software, cloud, data, and security engineering for companies in Qatar and the Gulf. Custom apps, ERP, AI, and cybersecurity from one delivery team."
+  }
+}

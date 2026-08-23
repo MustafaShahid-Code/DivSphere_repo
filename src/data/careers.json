@@ -1,0 +1,20 @@
+{
+  "hero": {
+    "eyebrow": "Careers",
+    "heading": "Build the systems, not just the sprints.",
+    "lede": "We stay small enough that everyone still ships code or sits in client calls — including leadership. If you want ownership over real systems, not just tickets, this is that kind of team."
+  },
+  "seo": {
+    "description": "Open roles at DivSphere in Doha — engineering, cloud, data and AI, design, QA, and IT support. Small team, real ownership, working software every sprint."
+  },
+  "benefitsIntro": { "eyebrow": "Benefits", "heading": "What you get." },
+  "benefits": [
+    { "title": "Health coverage", "body": "Comprehensive medical for you and dependents." },
+    { "title": "Flexible schedule", "body": "Core hours only — structure the rest of your day around focus, not facetime." },
+    { "title": "Learning budget", "body": "Annual budget for courses, certifications, and conferences." },
+    { "title": "Real time off", "body": "Generous paid leave, actually taken — we track utilization, not just accrual." }
+  ],
+  "rolesIntro": { "eyebrow": "Open roles", "heading": "Current openings." },
+  "noFitText": "Don't see a fit?",
+  "noFitLinkText": "Send us a general application"
+}

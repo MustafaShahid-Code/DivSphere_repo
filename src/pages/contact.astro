@@ -1,0 +1,207 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { site, clusters } from "../config/site";
+import contact from "../data/contact.json";
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "Contact", url: "/contact" },
+];
+
+const schema = [
+  {
+    "@type": "ContactPage",
+    name: `Contact ${site.name}`,
+    url: `${site.url}/contact`,
+    mainEntity: { "@id": `${site.url}/#organization` },
+  },
+];
+
+/**
+ * FORM DELIVERY
+ * ─────────────
+ * Wired to public/contact-handler.php — a small PHP mail script that
+ * Hostinger's Business hosting runs natively, no third-party account
+ * needed. Set the recipient address at the top of that file before
+ * going live; it has no default on purpose.
+ *
+ * TO USE A THIRD-PARTY PROVIDER instead:
+ *   Formspree  → set FORM_ENDPOINT below to https://formspree.io/f/XXXXX
+ *   Web3Forms  → set FORM_ENDPOINT to https://api.web3forms.com/submit
+ *                and add a hidden input: access_key
+ * The JavaScript already POSTs to FORM_ENDPOINT, so swapping providers
+ * is a one-line change.
+ */
+const FORM_NAME = "contact";
+const FORM_ENDPOINT = "/contact-handler.php";
+---
+
+<BaseLayout
+  title="Contact"
+  description={contact.seo.description}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <div class="page-hero">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <span class="eyebrow">{contact.hero.eyebrow}</span>
+      <h1>{contact.hero.heading}</h1>
+      <p class="lede">{contact.hero.lede}</p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:64px 0 96px;">
+    <div class="contact-grid">
+      <div>
+        <div class="info-block">
+          <h2 class="info-label">Email</h2>
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </div>
+        <div class="info-block">
+          <h2 class="info-label">Phone</h2>
+          <a href={`tel:${site.contact.phoneRaw}`}>{site.contact.phone}</a>
+        </div>
+        <div class="info-block">
+          <h2 class="info-label">Headquarters</h2>
+          <p>{contact.locationNote}</p>
+        </div>
+        <div class="info-block">
+          <h2 class="info-label">Response time</h2>
+          <p>{contact.responseTime}</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="success-box" id="successBox" role="status" aria-live="polite">
+          {contact.successMessage}
+        </div>
+        <div class="error-box" id="errorBox" role="alert">
+          {contact.errorMessage}
+          <a href={`mailto:${site.contact.email}`} style="color:inherit; font-weight:700;">
+            {site.contact.email}
+          </a>
+        </div>
+
+        <form
+          class="contact-form"
+          id="contactForm"
+          name={FORM_NAME}
+          method="POST"
+          action={FORM_ENDPOINT}
+        >
+          {/* Honeypot: hidden from people, tempting to spam bots — checked in contact-handler.php. */}
+          <p class="hp-field" aria-hidden="true">
+            <label>
+              Don't fill this in if you're human
+              <input name="bot-field" tabindex="-1" autocomplete="off" />
+            </label>
+          </p>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="fname">Full name</label>
+              <input type="text" id="fname" name="name" required autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="femail">Work email</label>
+              <input type="email" id="femail" name="email" required autocomplete="email" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="fcompany">Company</label>
+              <input type="text" id="fcompany" name="company" autocomplete="organization" />
+            </div>
+            <div class="field">
+              <label for="fservice">Service interest</label>
+              <select id="fservice" name="service">
+                {clusters.map((c) => <option>{c.heading}</option>)}
+                <option>Not sure yet</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="fmessage">What are you building?</label>
+            <textarea id="fmessage" name="message" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn" style="align-self:flex-start;">
+            Send message &rarr;
+          </button>
+          <p class="form-note">We'll only use your details to reply to this enquiry.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById("contactForm") as HTMLFormElement | null;
+  const successBox = document.getElementById("successBox");
+  const errorBox = document.getElementById("errorBox");
+  const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement | null;
+
+  form?.addEventListener("submit", async (e) => {
+    // Without JS the form still posts natively — this only upgrades
+    // the experience to an inline success state.
+    e.preventDefault();
+
+    errorBox?.classList.remove("show");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending…";
+    }
+
+    try {
+      const data = new FormData(form);
+
+      // Local development: there is no form backend running, so posting
+      // would either 404 or silently hit the dev server. Simulate the
+      // success path instead so the UX can be tested end to end.
+      const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+      if (isLocal) {
+        console.info(
+          "[contact form] Local mode — submission simulated, nothing was sent. " +
+            "Deploy to Hostinger (PHP handles delivery there) for real delivery.",
+          Object.fromEntries(data as any)
+        );
+        successBox?.classList.add("show");
+        form.reset();
+        successBox?.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: "generate_lead", form_name: "contact" });
+        return;
+      }
+
+      const res = await fetch(form.getAttribute("action") || "/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(data as any).toString(),
+      });
+
+      if (!res.ok) throw new Error(`Submission failed: ${res.status}`);
+
+      successBox?.classList.add("show");
+      form.reset();
+      successBox?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // Conversion signal — build your GTM/GA4/Ads/Meta/LinkedIn
+      // conversion triggers on this event.
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "generate_lead", form_name: "contact" });
+    } catch (err) {
+      // Never silently swallow a lead — tell the person it failed and
+      // give them the email address as a fallback.
+      console.error("Contact form submission failed:", err);
+      errorBox?.classList.add("show");
+      errorBox?.scrollIntoView({ behavior: "smooth", block: "center" });
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Send message &rarr;";
+      }
+    }
+  });
+</script>

@@ -1,0 +1,416 @@
+---
+/**
+ * The CMS admin panel.
+ *
+ * Three things happen on this page:
+ *
+ * 1. This is an Astro ROUTE, not a file in public/, so `/admin/`
+ *    resolves during `npm run dev` as well as in production. Astro's
+ *    dev server does not serve directory index files from public/ the
+ *    way a static host does.
+ *
+ * 2. The CMS is BUNDLED from node_modules rather than loaded from a
+ *    CDN, so the admin panel works with no internet connection.
+ *
+ * 3. LOCAL LOGIN GATE. Decap's local (filesystem) backend has no
+ *    login of its own. Below, a branded username/password screen
+ *    sits in front of it, checked against a hash of ADMIN_USER /
+ *    ADMIN_PASSWORD (set in .env) using the Web Crypto API — the
+ *    plaintext password is never sent anywhere or shipped to the
+ *    browser, only a SHA-256 hash of it.
+ *
+ *    Be clear-eyed about what this is: a real friction gate, not
+ *    cryptographic security. It's checked entirely in the browser, so
+ *    anyone with devtools open on this machine can bypass it — same
+ *    as decap-server's local API (port 8081) has no auth of its own
+ *    either. That's an acceptable trade for "single trusted laptop,
+ *    fully offline," which is what local_backend is built for. It
+ *    only appears in `astro dev` (import.meta.env.DEV) — the
+ *    production build skips it entirely and defers to Decap's
+ *    `github` backend instead, which IS real, server-checked,
+ *    invite-only auth: anyone signing in must have write access to
+ *    the GitHub repo, checked via GitHub's own OAuth login (proxied
+ *    through the small server in oauth-proxy/, since this project
+ *    isn't hosted on Netlify). See the README's "Going live" section.
+ *
+ * Collection definitions are read at runtime from /admin/config.yml,
+ * so you can adjust fields without rebuilding the site.
+ */
+import { createHash } from "node:crypto";
+import { site, resolveTheme } from "../../config/site";
+import themeData from "../../data/theme.json";
+import brand from "../../data/brand.json";
+
+import "@fontsource-variable/bricolage-grotesque";
+import "@fontsource-variable/manrope";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
+import "../../styles/global.css";
+import "../../styles/admin-theme.css";
+
+export const prerender = true;
+
+const theme = resolveTheme(themeData.palette);
+const themeVars = [
+  `--accent:${theme.accent}`,
+  `--accent-strong:${theme.accentStrong}`,
+  `--accent-soft:${theme.accentSoft}`,
+  `--accent-line:${theme.accentLine}`,
+  `--on-accent:${theme.onAccent}`,
+].join(";");
+
+// Only ever true while running `astro dev` — false in the built
+// production site, where this whole gate is inert.
+const isLocalMode = import.meta.env.DEV;
+
+const adminUser = import.meta.env.ADMIN_USER || "admin";
+const adminPassword = import.meta.env.ADMIN_PASSWORD || "changeme";
+const expectedHash = createHash("sha256")
+  .update(`${adminUser}:${adminPassword}:ds-admin`)
+  .digest("hex");
+---
+
+<!doctype html>
+<html lang="en" style={themeVars}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Never let the admin panel into search results. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Content Manager — {site.name}</title>
+    <link rel="icon" type="image/png" href={brand.favicon} />
+    <!--
+      Decap CMS fetches "config.yml" using a RELATIVE path resolved
+      against the current page URL. If someone opens this page as
+      "/admin" (no trailing slash) instead of "/admin/", that relative
+      fetch resolves to "/config.yml" at the site root — a 404 — even
+      though the file is at /admin/config.yml.
+
+      This tag pins the config to an absolute path, so it loads
+      correctly no matter which URL got you here.
+    -->
+    <link rel="cms-config-url" type="text/yaml" href="/admin/config.yml" />
+  </head>
+  <body class="admin-body">
+    <noscript>
+      <div class="cms-fallback">
+        <h1>JavaScript required</h1>
+        <p>The content manager needs JavaScript enabled.</p>
+      </div>
+    </noscript>
+
+    <!-- ============== Local login gate ============== -->
+    <div id="loginGate" class="login-body" hidden>
+      <div class="login-orb" aria-hidden="true"></div>
+      <main class="login-shell">
+        <div class="login-card">
+          <div class="login-mark">
+            <img src={brand.logoMark} alt={brand.logoAlt} class="login-mark-logo" />
+            <span class="mono">{site.name}</span>
+          </div>
+
+          <h1>Content Manager</h1>
+          <p class="login-sub">Sign in to edit the site.</p>
+
+          <p class="login-error" id="gateError" role="alert" hidden>
+            That username or password didn't match. Try again.
+          </p>
+
+          <form id="gateForm" class="login-form">
+            <div class="field">
+              <label for="gateUsername">Username</label>
+              <input type="text" id="gateUsername" name="username" autocomplete="username" required />
+            </div>
+            <div class="field">
+              <label for="gatePassword">Password</label>
+              <input type="password" id="gatePassword" name="password" autocomplete="current-password" required />
+            </div>
+            <button type="submit" class="btn btn-primary login-submit">Sign in &rarr;</button>
+          </form>
+
+          <p class="login-note">
+            Local session, remembered on this browser. Credentials are set
+            in <code>.env</code> — see <code>ADMIN_USER</code> /
+            <code>ADMIN_PASSWORD</code>.
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <!-- ============== CMS fallback / troubleshooting ============== -->
+    <div class="cms-fallback" id="cmsFallback" hidden>
+      <h1>The content manager couldn't start</h1>
+      <p>The editor loaded but couldn't reach its backend.</p>
+      <ul>
+        <li>
+          Check the local CMS server is running — your terminal should show
+          <code>Decap CMS Proxy Server listening on port 8081</code>.
+        </li>
+        <li>If it isn't, stop the dev server and run <code>npm start</code> instead of <code>npm run dev</code>.</li>
+        <li>Confirm <code>local_backend: true</code> in <code>public/admin/config.yml</code>.</li>
+      </ul>
+    </div>
+
+    <!-- ============== Floating log out control ============== -->
+    <button type="button" id="gateLogout" class="gate-logout" hidden>Log out</button>
+
+    <script define:vars={{ expectedHash, isLocalMode }} is:inline>
+      window.__DS_ADMIN__ = { expectedHash, isLocalMode };
+    </script>
+
+    <script>
+      // Bundled locally — no CDN, works offline.
+      import CMS from "decap-cms-app";
+
+      const { expectedHash, isLocalMode } = window.__DS_ADMIN__;
+      const STORAGE_KEY = "ds_admin_auth_v1";
+
+      const gate = document.getElementById("loginGate");
+      const gateForm = document.getElementById("gateForm") as HTMLFormElement | null;
+      const gateError = document.getElementById("gateError");
+      const gateLogout = document.getElementById("gateLogout");
+
+      async function sha256Hex(input: string): Promise<string> {
+        const bytes = new TextEncoder().encode(input);
+        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        return Array.from(new Uint8Array(digest))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      function startCMS() {
+        CMS.init();
+
+        // If the editor hasn't rendered shortly after init, surface the
+        // troubleshooting panel rather than leaving a blank white page.
+        setTimeout(() => {
+          const rendered = document.querySelector("#nc-root, [class*='CMS']");
+          if (!rendered) {
+            const el = document.getElementById("cmsFallback");
+            if (el) el.hidden = false;
+          }
+        }, 5000);
+
+        if (isLocalMode && gateLogout) {
+          gateLogout.hidden = false;
+        }
+      }
+
+      if (!isLocalMode) {
+        // Production build: this gate never applies. The `github` backend
+        // in config.yml handles real auth instead — clicking "Login with
+        // GitHub" opens the OAuth proxy (see oauth-proxy/), and only
+        // accounts with write access to the repo can sign in.
+        startCMS();
+      } else {
+        const remembered = localStorage.getItem(STORAGE_KEY);
+        if (remembered && remembered === expectedHash) {
+          startCMS();
+        } else if (gate) {
+          gate.hidden = false;
+        }
+
+        gateForm?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (gateError) gateError.hidden = true;
+
+          const data = new FormData(gateForm);
+          const username = String(data.get("username") || "");
+          const password = String(data.get("password") || "");
+          const hash = await sha256Hex(`${username}:${password}:ds-admin`);
+
+          if (hash === expectedHash) {
+            localStorage.setItem(STORAGE_KEY, hash);
+            if (gate) gate.hidden = true;
+            startCMS();
+          } else {
+            if (gateError) gateError.hidden = false;
+            (document.getElementById("gatePassword") as HTMLInputElement | null)?.select();
+          }
+        });
+
+        gateLogout?.addEventListener("click", () => {
+          localStorage.removeItem(STORAGE_KEY);
+          window.location.reload();
+        });
+      }
+    </script>
+
+    <style>
+      .login-body[hidden] {
+        display: none !important;
+      }
+
+      .login-body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background: var(--ground);
+      }
+
+      .login-orb {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 640px;
+        height: 640px;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+        filter: blur(10px);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .login-shell {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .login-card {
+        background: linear-gradient(180deg, var(--surface-raised) 0%, var(--surface) 100%);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 40px 36px;
+        box-shadow: 0 24px 64px -24px rgba(0, 0, 0, 0.6);
+      }
+
+      .login-mark {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 28px;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .login-mark-logo {
+        width: 20px;
+        height: 20px;
+        display: block;
+      }
+
+      .login-card h1 {
+        font-size: 1.5rem;
+        margin-bottom: 6px;
+      }
+
+      .login-sub {
+        color: var(--text-muted);
+        margin: 0 0 28px;
+        font-size: 0.94rem;
+      }
+
+      .login-error {
+        background: rgba(255, 92, 92, 0.1);
+        border: 1px solid rgba(255, 92, 92, 0.35);
+        color: #ff9d9d;
+        padding: 11px 14px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        margin: 0 0 20px;
+      }
+
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .login-form .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .login-form label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+
+      .login-form input {
+        background: var(--ground);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 14px;
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 0.96rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .login-form input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+
+      .login-submit {
+        justify-content: center;
+        margin-top: 6px;
+        width: 100%;
+      }
+
+      .login-note {
+        margin: 24px 0 0;
+        color: var(--text-faint);
+        font-size: 0.78rem;
+        line-height: 1.6;
+      }
+
+      .login-note code {
+        background: var(--ground);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-family: var(--font-mono);
+        font-size: 0.92em;
+      }
+
+      .cms-fallback {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        max-width: 620px;
+        margin: 12vh auto;
+        padding: 0 24px;
+        color: var(--text);
+        line-height: 1.6;
+      }
+      .cms-fallback h1 { font-size: 1.4rem; margin-bottom: 12px; }
+      .cms-fallback code {
+        background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 0.9em;
+        border: 1px solid var(--line);
+      }
+      .cms-fallback li { margin-bottom: 8px; }
+
+      .gate-logout {
+        position: fixed;
+        bottom: 18px;
+        right: 18px;
+        z-index: 40;
+        background: var(--surface-raised);
+        color: var(--text-muted);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 9px 16px;
+        font-family: var(--font-body);
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+      }
+      .gate-logout:hover {
+        color: var(--text);
+        border-color: var(--accent-line);
+      }
+    </style>
+  </body>
+</html>

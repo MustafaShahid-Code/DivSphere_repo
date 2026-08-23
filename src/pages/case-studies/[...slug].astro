@@ -1,0 +1,169 @@
+---
+import { getCollection, render } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { site } from "../../config/site";
+
+/**
+ * One static page per case study. These rank for sector- and
+ * service-specific queries ("ERP implementation logistics Qatar")
+ * that the summary listing page can never target on its own.
+ */
+export const getStaticPaths: GetStaticPaths = async () => {
+  const items = await getCollection("caseStudies", ({ data }) => !data.draft);
+  const sorted = items.sort((a, b) => a.data.order - b.data.order);
+
+  return sorted.map((item, i) => ({
+    params: { slug: item.id },
+    props: {
+      item,
+      // Related work: the next two entries, wrapping around.
+      related: [sorted[(i + 1) % sorted.length], sorted[(i + 2) % sorted.length]].filter(
+        (r) => r && r.id !== item.id
+      ),
+    },
+  }));
+};
+
+const { item, related } = Astro.props;
+const { Content } = await render(item);
+const d = item.data;
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "Case Studies", url: "/case-studies" },
+  { name: d.title, url: `/case-studies/${item.id}` },
+];
+
+const schema = [
+  {
+    "@type": "Article",
+    headline: d.title,
+    description: d.seoDescription || d.description,
+    articleSection: d.category,
+    about: { "@type": "Thing", name: `${d.category} for ${d.sector}` },
+    author: { "@id": `${site.url}/#organization` },
+    publisher: { "@id": `${site.url}/#organization` },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${site.url}/case-studies/${item.id}` },
+    inLanguage: site.lang,
+    ...(d.publishDate ? { datePublished: d.publishDate.toISOString() } : {}),
+  },
+];
+---
+
+<BaseLayout
+  title={d.seoTitle || d.title}
+  description={d.seoDescription || d.description}
+  type="article"
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <article>
+    <div class="article-hero">
+      <div class="wrap">
+        <Breadcrumbs items={crumbs} />
+        <span class="eyebrow">{d.sector} &middot; {d.category}</span>
+        <h1>{d.title}</h1>
+        <p class="lede" style="margin-top:18px; max-width:60ch;">{d.description}</p>
+      </div>
+    </div>
+
+    {
+      d.results.length > 0 && (
+        <div class="wrap">
+          <div class="results-grid">
+            {d.results.map((r) => (
+              <div class="result-box">
+                <div class="result-value">{r.value}</div>
+                <div class="result-label">{r.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <div class="wrap">
+      <div class="cs-layout">
+        <div class="prose" style="padding-top:40px;">
+          <Content />
+        </div>
+
+        <aside class="cs-sidebar">
+          <div class="cs-facts">
+            {
+              d.client && (
+                <div class="cs-fact">
+                  <span class="cs-fact-label">Client</span>
+                  <span class="cs-fact-value">{d.client}</span>
+                </div>
+              )
+            }
+            <div class="cs-fact">
+              <span class="cs-fact-label">Sector</span>
+              <span class="cs-fact-value">{d.sector}</span>
+            </div>
+            {
+              d.duration && (
+                <div class="cs-fact">
+                  <span class="cs-fact-label">Duration</span>
+                  <span class="cs-fact-value">{d.duration}</span>
+                </div>
+              )
+            }
+            {
+              d.servicesUsed.length > 0 && (
+                <div class="cs-fact">
+                  <span class="cs-fact-label">Services delivered</span>
+                  <div class="tags" style="margin-top:8px;">
+                    {d.servicesUsed.map((s) => (
+                      <span class="tag">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+          </div>
+
+          <div class="cs-cta">
+            <h2 style="font-size:1rem; margin-bottom:8px;">Facing something similar?</h2>
+            <p style="font-size:0.87rem; color:var(--text-muted); margin-bottom:16px;">
+              Tell us where it's breaking down. We reply within one business day.
+            </p>
+            <a href="/contact" class="btn btn-primary btn-sm">Start a project &rarr;</a>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    {
+      related.length > 0 && (
+        <div class="wrap" style="padding:24px 0 96px;">
+          <div class="section-head" style="margin-bottom:28px;">
+            <div>
+              <span class="eyebrow">More work</span>
+              <h2 style="margin-top:14px; font-size:1.5rem;">Related engagements.</h2>
+            </div>
+            <a href="/case-studies" class="btn btn-ghost">All case studies &rarr;</a>
+          </div>
+          <div class="case-grid">
+            {related.map((r) => (
+              <a href={`/case-studies/${r.id}`} class="case-card">
+                <div class="case-visual">
+                  <span class="mono">// {r.data.sector.toUpperCase()}</span>
+                </div>
+                <div class="case-body">
+                  <span class="case-sector">{r.data.sector} &middot; {r.data.category}</span>
+                  <h3 style="font-size:1.05rem; font-family:var(--font-display);">{r.data.title}</h3>
+                  <p>{r.data.description}</p>
+                  <div class="case-metric">{r.data.metric}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </article>
+</BaseLayout>

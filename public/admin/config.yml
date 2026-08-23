@@ -1,0 +1,446 @@
+# ─────────────────────────────────────────────────────────────
+#  DECAP CMS CONFIGURATION
+# ─────────────────────────────────────────────────────────────
+#  This drives the admin panel at /admin. Every collection below
+#  maps to a folder in src/content/, and every field maps to a
+#  frontmatter key validated by src/content.config.ts.
+#
+#  If you add a field here, add it to the Zod schema too — the
+#  build will fail loudly otherwise, which is the intended
+#  safety net.
+# ─────────────────────────────────────────────────────────────
+
+# ═════════════════════════════════════════════════════════════
+#  TWO MODES. Only ONE `backend:` block below should be active
+#  (the other commented out) at any given time.
+#
+#  LOCAL  — no Git, no accounts, nothing leaves your machine.
+#           Run `npm start`, open http://localhost:4321/admin.
+#           This is what ships by default in this file.
+#
+#  LIVE   — real login at https://yourdomain/admin, from any
+#           browser. Content commits go straight to GitHub
+#           (with a review step via pull request), and a
+#           GitHub Action rebuilds + redeploys the site to
+#           Hostinger automatically. Needs the GitHub OAuth
+#           proxy set up first — see README.md → "Going live".
+# ═════════════════════════════════════════════════════════════
+
+# ── LOCAL (commented out — was active for local development) ─
+# backend:
+#   name: git-gateway
+#   branch: main
+#
+# local_backend: true
+
+# ── LIVE (active) ─────────────────────────────────────────────
+backend:
+  name: github
+  repo: MustafaShahid-Code/DivSphere_repo
+  branch: main
+  base_url: https://oauth.divsphere.co
+  commit_messages:
+    create: "cms: create {{collection}} – {{slug}}"
+    update: "cms: update {{collection}} – {{slug}}"
+    delete: "cms: delete {{collection}} – {{slug}}"
+
+local_backend: false
+
+# Review edits as a pull request before they publish, instead of
+# committing straight to `main`. Works with the `github` backend only.
+# Uncomment if you'd rather review every CMS edit before it goes live:
+# publish_mode: editorial_workflow
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+site_url: https://divsphere.co
+display_url: https://divsphere.co
+logo_url: /uploads/brand/favicon.png
+
+collections:
+  # ── SITE SETTINGS ─────────────────────────────────────────
+  #  Singleton pages. Each entry edits one JSON file that the
+  #  build reads directly — theme, homepage copy, section
+  #  visibility, and the About/Careers/Contact page text.
+  - name: "settings"
+    label: "Site Settings"
+    editor: { preview: false }
+    files:
+      # ---- Brand ----
+      - name: "brand"
+        label: "Brand"
+        file: "src/data/brand.json"
+        description: "The logo mark and favicon used across the site and the CMS. Upload a PNG with a transparent background for the logo — it needs to sit cleanly on both light and dark surfaces."
+        fields:
+          - name: "logoMark"
+            label: "Logo mark"
+            widget: "image"
+            media_library: { config: { multiple: false } }
+            hint: "Shown in the header and footer, next to the company name. Square, transparent background, at least 128×128."
+          - name: "favicon"
+            label: "Favicon"
+            widget: "image"
+            media_library: { config: { multiple: false } }
+            hint: "The browser-tab icon. Square, at least 128×128 — a solid background works better here than transparent, since browser tabs can be light or dark."
+          - name: "logoAlt"
+            label: "Logo alt text"
+            widget: "string"
+            default: "DivSphere"
+            hint: "Read by screen readers. Usually just the company name."
+
+      # ---- Theme ----
+      - name: "theme"
+        label: "Theme"
+        file: "src/data/theme.json"
+        description: "The accent colour used across buttons, links, and highlights."
+        fields:
+          - name: "palette"
+            label: "Accent palette"
+            widget: "select"
+            default: "amber"
+            options:
+              - { label: "Amber Signal (default)", value: "amber" }
+              - { label: "Cyan Nebula", value: "cyan" }
+              - { label: "Emerald Terminal", value: "emerald" }
+              - { label: "Violet Pulse", value: "violet" }
+              - { label: "Crimson Alert", value: "crimson" }
+
+      # ---- Homepage ----
+      - name: "homepage"
+        label: "Homepage"
+        file: "src/data/homepage.json"
+        description: "Hero copy, the stat readout, and which sections appear."
+        fields:
+          - name: "hero"
+            label: "Hero"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow label", widget: "string" }
+              - { name: "heading", label: "Headline", widget: "text", hint: "This is the page's H1 — the single most important line for SEO." }
+              - { name: "lede", label: "Supporting paragraph", widget: "text" }
+              - { name: "ctaPrimary", label: "Primary button label", widget: "string" }
+              - { name: "ctaSecondary", label: "Secondary button label", widget: "string" }
+              - name: "stats"
+                label: "Stat readout"
+                widget: "list"
+                max: 4
+                summary: "{{fields.num}} — {{fields.label}}"
+                fields:
+                  - { name: "num", label: "Number", widget: "string" }
+                  - { name: "label", label: "Label", widget: "string" }
+          - name: "sections"
+            label: "Show / hide sections"
+            widget: "object"
+            hint: "Turn homepage blocks off without deleting their content."
+            fields:
+              - { name: "heroStats", label: "Hero stats strip", widget: "boolean", default: true }
+              - { name: "capabilities", label: "Capability clusters", widget: "boolean", default: true }
+              - { name: "process", label: "Delivery process", widget: "boolean", default: true }
+              - { name: "caseStudiesPreview", label: "Case studies preview", widget: "boolean", default: true }
+              - { name: "testimonials", label: "Testimonials", widget: "boolean", default: true }
+              - { name: "industries", label: "Industries strip", widget: "boolean", default: true }
+              - { name: "ctaBand", label: "Closing CTA band", widget: "boolean", default: true }
+          - name: "capabilitiesIntro"
+            label: "Capabilities — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+              - { name: "lede", label: "Intro paragraph", widget: "text" }
+          - name: "processIntro"
+            label: "Process — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - name: "processSteps"
+            label: "Process steps"
+            widget: "list"
+            summary: "{{fields.idx}} — {{fields.title}}"
+            fields:
+              - { name: "idx", label: "Number", widget: "string" }
+              - { name: "title", label: "Title", widget: "string" }
+              - { name: "body", label: "Description", widget: "text" }
+          - name: "caseStudiesIntro"
+            label: "Case studies — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - name: "testimonialsIntro"
+            label: "Testimonials — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - name: "industriesIntro"
+            label: "Industries — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - { name: "industries", label: "Industries", widget: "list", hint: "One per line." }
+          - name: "ctaBand"
+            label: "Closing CTA band"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+              - { name: "body", label: "Body text", widget: "text" }
+              - { name: "buttonSecondary", label: "Secondary button label", widget: "string" }
+          - name: "seo"
+            label: "SEO"
+            widget: "object"
+            fields:
+              - { name: "description", label: "Meta description", widget: "text", hint: "120–160 characters. Shown in Google results." }
+
+      # ---- About page ----
+      - name: "about"
+        label: "About Page"
+        file: "src/data/about.json"
+        fields:
+          - name: "hero"
+            label: "Hero"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Headline (H1)", widget: "text" }
+              - { name: "lede", label: "Supporting paragraph", widget: "text" }
+          - name: "seo"
+            label: "SEO"
+            widget: "object"
+            fields:
+              - { name: "description", label: "Meta description", widget: "text", hint: "120–160 characters." }
+          - name: "valuesIntro"
+            label: "Values — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - name: "values"
+            label: "Values"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { name: "title", label: "Title", widget: "string" }
+              - { name: "body", label: "Description", widget: "text" }
+          - name: "milestonesIntro"
+            label: "Milestones — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - name: "milestones"
+            label: "Milestones"
+            widget: "list"
+            summary: "{{fields.year}} — {{fields.title}}"
+            fields:
+              - { name: "year", label: "Year / period", widget: "string" }
+              - { name: "title", label: "Title", widget: "string" }
+              - { name: "body", label: "Description", widget: "text" }
+          - name: "teamIntro"
+            label: "Team — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+              - { name: "lede", label: "Intro paragraph", widget: "text" }
+          - name: "expertise"
+            label: "Practice areas"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { name: "tag", label: "Tag", widget: "string", hint: "Short uppercase label, e.g. ENGINEERING" }
+              - { name: "title", label: "Title", widget: "string" }
+              - { name: "body", label: "Description", widget: "text" }
+
+      # ---- Careers page ----
+      - name: "careers-page"
+        label: "Careers Page"
+        file: "src/data/careers.json"
+        description: "Page copy only. Job listings are managed under Open Roles."
+        fields:
+          - name: "hero"
+            label: "Hero"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Headline (H1)", widget: "text" }
+              - { name: "lede", label: "Supporting paragraph", widget: "text" }
+          - name: "seo"
+            label: "SEO"
+            widget: "object"
+            fields:
+              - { name: "description", label: "Meta description", widget: "text", hint: "120–160 characters." }
+          - name: "benefitsIntro"
+            label: "Benefits — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - name: "benefits"
+            label: "Benefits"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { name: "title", label: "Title", widget: "string" }
+              - { name: "body", label: "Description", widget: "text" }
+          - name: "rolesIntro"
+            label: "Open roles — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - { name: "noFitText", label: "\"No fit\" prompt", widget: "string" }
+          - { name: "noFitLinkText", label: "\"No fit\" link text", widget: "string" }
+
+      # ---- Contact page ----
+      - name: "contact-page"
+        label: "Contact Page"
+        file: "src/data/contact.json"
+        description: "Page copy. Email, phone, and address live in src/config/site.ts."
+        fields:
+          - name: "hero"
+            label: "Hero"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Headline (H1)", widget: "text" }
+              - { name: "lede", label: "Supporting paragraph", widget: "text" }
+          - name: "seo"
+            label: "SEO"
+            widget: "object"
+            fields:
+              - { name: "description", label: "Meta description", widget: "text", hint: "120–160 characters." }
+          - { name: "locationNote", label: "Headquarters note", widget: "text" }
+          - { name: "responseTime", label: "Response time", widget: "string" }
+          - { name: "successMessage", label: "Form success message", widget: "text" }
+          - { name: "errorMessage", label: "Form error message", widget: "text" }
+
+  # ── SERVICES ──────────────────────────────────────────────
+  - name: "services"
+    label: "Services"
+    label_singular: "Service"
+    folder: "src/content/services"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    format: "frontmatter"
+    summary: "{{title}} — {{cluster}}"
+    sortable_fields: ["order", "title"]
+    fields:
+      - { name: "title", label: "Service name", widget: "string" }
+      - name: "cluster"
+        label: "Capability"
+        widget: "select"
+        hint: "Which of the seven capability groups this service belongs under."
+        options:
+          - { label: "01 — Product & Engineering", value: "build" }
+          - { label: "02 — Cloud & SaaS", value: "run" }
+          - { label: "03 — Data & AI", value: "learn" }
+          - { label: "04 — Enterprise Systems", value: "transform" }
+          - { label: "05 — Design", value: "shape" }
+          - { label: "06 — Quality & Security", value: "protect" }
+          - { label: "07 — Support & Enablement", value: "sustain" }
+      - { name: "description", label: "Description", widget: "text", hint: "One or two sentences. Shown on the Services page." }
+      - { name: "order", label: "Sort order", widget: "number", default: 99, value_type: "int" }
+      - { name: "draft", label: "Draft (hidden from site)", widget: "boolean", default: false, required: false }
+
+  # ── CASE STUDIES ──────────────────────────────────────────
+  - name: "caseStudies"
+    label: "Case Studies"
+    label_singular: "Case Study"
+    folder: "src/content/case-studies"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    format: "frontmatter"
+    summary: "{{title}} — {{sector}}"
+    sortable_fields: ["order", "title"]
+    fields:
+      - { name: "title", label: "Title", widget: "string" }
+      - { name: "sector", label: "Client sector", widget: "string", hint: "e.g. Fintech, Logistics, Healthcare" }
+      - { name: "category", label: "Category", widget: "string", hint: "Used for the filter buttons. Keep these consistent — e.g. Cloud, ERP, AI, Security, Product." }
+      - { name: "description", label: "Description", widget: "text" }
+      - { name: "metric", label: "Headline result", widget: "string", hint: "Shown on the card. e.g. ↑ 31% faster dispatch cycle time" }
+      - { name: "client", label: "Client (optional)", widget: "string", required: false, hint: "Leave blank or use a generic description if under NDA." }
+      - { name: "duration", label: "Duration (optional)", widget: "string", required: false, hint: "e.g. 9 months" }
+      - { name: "servicesUsed", label: "Services delivered", widget: "list", required: false, hint: "One per line. Should match names on the Services page." }
+      - name: "results"
+        label: "Results grid"
+        widget: "list"
+        required: false
+        max: 4
+        summary: "{{fields.value}} — {{fields.label}}"
+        hint: "Up to four measurable outcomes shown at the top of the case study page."
+        fields:
+          - { name: "value", label: "Value", widget: "string", hint: "e.g. 31% or 3.1×" }
+          - { name: "label", label: "Label", widget: "string" }
+      - { name: "publishDate", label: "Date (optional)", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, picker_utc: true, required: false }
+      - { name: "seoTitle", label: "SEO title (optional)", widget: "string", required: false, hint: "Shorter title for Google. Under ~48 characters." }
+      - { name: "seoDescription", label: "SEO description (optional)", widget: "text", required: false, hint: "Overrides the description in search results. 120–160 characters." }
+      - { name: "order", label: "Sort order", widget: "number", default: 99, value_type: "int" }
+      - { name: "draft", label: "Draft (hidden from site)", widget: "boolean", default: false, required: false }
+      - { name: "body", label: "Full write-up", widget: "markdown", required: false, hint: "The challenge, your approach, and the outcome. This is what ranks in search — aim for 600+ words." }
+
+  # ── BLOG ──────────────────────────────────────────────────
+  - name: "blog"
+    label: "Blog Posts"
+    label_singular: "Blog Post"
+    folder: "src/content/blog"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    format: "frontmatter"
+    summary: "{{title}} — {{publishDate | date('YYYY-MM-DD')}}"
+    sortable_fields: ["publishDate", "title"]
+    fields:
+      - { name: "title", label: "Title", widget: "string", hint: "This becomes the page's <h1> and its search-result headline." }
+      - { name: "category", label: "Category", widget: "string" }
+      - { name: "excerpt", label: "Excerpt", widget: "text", hint: "Shown on the blog index and used as the meta description if no SEO description is set." }
+      - { name: "publishDate", label: "Publish date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, picker_utc: true }
+      - { name: "updatedDate", label: "Last updated", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, picker_utc: true, required: false, hint: "Set this when you materially revise a post — Google favours freshness." }
+      - { name: "author", label: "Author", widget: "string", default: "DivSphere" }
+      - { name: "readTime", label: "Read time", widget: "string", default: "5 min read" }
+      - { name: "seoTitle", label: "SEO title (optional)", widget: "string", required: false, hint: "Shorter title for Google. Keep under ~48 characters — the site name is appended automatically." }
+      - { name: "seoDescription", label: "SEO description (optional)", widget: "text", required: false, hint: "Overrides the excerpt in search results. 120–160 characters." }
+      - { name: "draft", label: "Draft (hidden from site)", widget: "boolean", default: false, required: false }
+      - { name: "body", label: "Body", widget: "markdown", hint: "Aim for 800–1,500 words of genuinely useful content. Thin posts do not rank." }
+
+  # ── TESTIMONIALS ──────────────────────────────────────────
+  - name: "testimonials"
+    label: "Testimonials"
+    label_singular: "Testimonial"
+    folder: "src/content/testimonials"
+    create: true
+    delete: true
+    slug: "testimonial-{{slug}}"
+    format: "frontmatter"
+    summary: "{{name}} — {{role}}"
+    sortable_fields: ["order"]
+    fields:
+      - { name: "quote", label: "Quote", widget: "text" }
+      - { name: "name", label: "Name or title", widget: "string", hint: "e.g. VP of Engineering" }
+      - { name: "role", label: "Company / context", widget: "string", hint: "e.g. Regional Fintech Platform" }
+      - { name: "order", label: "Sort order", widget: "number", default: 99, value_type: "int" }
+      - { name: "draft", label: "Draft (hidden from site)", widget: "boolean", default: false, required: false }
+
+  # ── CAREERS ───────────────────────────────────────────────
+  - name: "careers"
+    label: "Open Roles"
+    label_singular: "Role"
+    folder: "src/content/careers"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    format: "frontmatter"
+    summary: "{{title}} — {{department}}"
+    sortable_fields: ["order", "title"]
+    fields:
+      - { name: "title", label: "Job title", widget: "string" }
+      - { name: "department", label: "Department", widget: "string" }
+      - { name: "employmentType", label: "Employment type", widget: "select", options: ["Full-time", "Part-time", "Contract", "Internship"], default: "Full-time" }
+      - { name: "location", label: "Location", widget: "select", options: ["On-site", "Hybrid", "Remote-friendly", "Remote"], default: "On-site" }
+      - { name: "order", label: "Sort order", widget: "number", default: 99, value_type: "int" }
+      - { name: "draft", label: "Draft (hidden from site)", widget: "boolean", default: false, required: false }

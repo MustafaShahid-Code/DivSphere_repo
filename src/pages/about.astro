@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import about from "../data/about.json";
+
+// All copy on this page is edited in the CMS under
+// Site Settings → About Page.
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "About", url: "/about" },
+];
+---
+
+<BaseLayout title="About" description={about.seo.description} breadcrumbs={crumbs}>
+  <div class="page-hero">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <span class="eyebrow">{about.hero.eyebrow}</span>
+      <h1>{about.hero.heading}</h1>
+      <p class="lede">{about.hero.lede}</p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:88px 0 0;">
+    <div class="section-head reveal">
+      <div>
+        <span class="eyebrow">{about.valuesIntro.eyebrow}</span>
+        <h2 style="margin-top:14px;">{about.valuesIntro.heading}</h2>
+      </div>
+    </div>
+    <div class="values-grid">
+      {
+        about.values.map((v) => (
+          <div class="value-card reveal">
+            <h3 style="font-size:1rem; margin-bottom:8px; font-family:var(--font-display);">{v.title}</h3>
+            <p>{v.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:96px 0 0;">
+    <div class="section-head reveal">
+      <div>
+        <span class="eyebrow">{about.milestonesIntro.eyebrow}</span>
+        <h2 style="margin-top:14px;">{about.milestonesIntro.heading}</h2>
+      </div>
+    </div>
+    <div class="timeline reveal">
+      {
+        about.milestones.map((m) => (
+          <div class="timeline-item">
+            <span class="yr mono">{m.year}</span>
+            <h3 style="font-size:1.05rem; margin:6px 0; font-family:var(--font-display);">{m.title}</h3>
+            <p>{m.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:96px 0 96px;">
+    <div class="section-head reveal">
+      <div>
+        <span class="eyebrow">{about.teamIntro.eyebrow}</span>
+        <h2 style="margin-top:14px;">{about.teamIntro.heading}</h2>
+      </div>
+      <p class="lede">{about.teamIntro.lede}</p>
+    </div>
+    <div class="expertise-grid">
+      {
+        about.expertise.map((e) => (
+          <div class="expertise-card reveal">
+            <span class="mono">// {e.tag}</span>
+            <h3 style="font-size:1.02rem; margin-bottom:8px; font-family:var(--font-display);">{e.title}</h3>
+            <p>{e.body}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>
