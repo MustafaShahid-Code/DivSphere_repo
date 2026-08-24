@@ -617,6 +617,38 @@
     font-family:var(--font-mono);
   }
 
+  .faq-list{
+    max-width:760px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .faq-item{
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--surface);
+    padding:0 22px;
+    transition:border-color 0.15s ease;
+  }
+  .faq-item[open]{border-color:var(--accent-line);}
+  .faq-item summary{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:20px 0;
+    cursor:pointer;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:1rem;
+    color:var(--text);
+    list-style:none;
+  }
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-chevron{flex-shrink:0; color:var(--text-faint); transition:transform 0.2s ease;}
+  .faq-item[open] .faq-chevron{transform:rotate(180deg); color:var(--accent);}
+  .faq-item p{color:var(--text-muted); margin:0 0 22px; line-height:1.65; font-size:0.95rem;}
+
   .cta-band{
     border:1px solid var(--line);
     border-radius:14px;

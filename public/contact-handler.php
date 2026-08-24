@@ -25,7 +25,17 @@
  *   README → "Tracking and campaigns" for where that goes) so the
  *   widget renders on the form, AND paste the matching secret key
  *   below — both are required, the widget alone verifies nothing.
+ *
+ * INQUIRY INBOX:
+ *   Every submission that passes validation is also saved to the
+ *   `inquiries` database table (see inbox/schema.sql), so it shows up
+ *   at /admin/inbox/ with read/unread status and can be replied to
+ *   from there. This only activates once inbox/config.php exists and
+ *   points at a real database — until then this silently no-ops and
+ *   the form behaves exactly as it did before (email only).
  */
+
+require_once __DIR__ . "/inbox/db.php";
 
 // ── Configuration ────────────────────────────────────────────
 $recipient = "info@divsphere.co"; // ← confirm this is the address you want enquiries sent to.
@@ -130,6 +140,23 @@ $headers = [
     "Reply-To: $name <$email>",
     "Content-Type: text/plain; charset=UTF-8",
 ];
+
+// Store to the inquiry inbox first, so the submission is durably
+// captured even if the notification email below fails for any reason
+// (a full mailbox, a misconfigured domain, etc.). No-ops silently if
+// inbox/config.php hasn't been set up yet — see the note above.
+$inboxDb = dsInboxDb();
+if ($inboxDb) {
+    try {
+        $stmt = $inboxDb->prepare(
+            "INSERT INTO inquiries (name, email, company, service, message) VALUES (?, ?, ?, ?, ?)"
+        );
+        $stmt->execute([$name, $email, $company, $service, $message]);
+    } catch (Throwable $e) {
+        error_log("[inbox] failed to store inquiry: " . $e->getMessage());
+        // Non-fatal — the visitor's submission still gets emailed below.
+    }
+}
 
 $sent = mail($recipient, $subject, $body, implode("\r\n", $headers));
 

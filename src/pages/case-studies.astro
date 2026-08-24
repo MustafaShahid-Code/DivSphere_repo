@@ -8,6 +8,7 @@ const caseStudies = (await getCollection("caseStudies", ({ data }) => !data.draf
 );
 
 const categories = [...new Set(caseStudies.map((cs) => cs.data.category))];
+const sectors = [...new Set(caseStudies.map((cs) => cs.data.sector))].sort();
 
 const crumbs = [
   { name: "Home", url: "/" },
@@ -37,18 +38,27 @@ const crumbs = [
     <!--
       Filtering is client-side progressive enhancement. Every card is
       present in the HTML, so crawlers index all of them regardless.
+      Category and sector filters combine with AND logic — picking a
+      sector narrows within whichever category pill is already active.
     -->
-    <div class="filter-row">
+    <div class="filter-row" id="categoryFilters" data-filter-group="category">
       <button class="filter-pill active" type="button" data-filter="all">All</button>
       {categories.map((cat) => (
         <button class="filter-pill" type="button" data-filter={cat}>{cat}</button>
       ))}
     </div>
+    <div class="filter-row filter-row-sector" id="sectorFilters" data-filter-group="sector">
+      <button class="filter-pill filter-pill-sector active" type="button" data-filter="all">All sectors</button>
+      {sectors.map((sector) => (
+        <button class="filter-pill filter-pill-sector" type="button" data-filter={sector}>{sector}</button>
+      ))}
+    </div>
+    <p class="filter-empty" id="filterEmpty" hidden>No case studies match that combination yet.</p>
 
     <div class="case-grid" id="caseGrid" style="margin-bottom:96px;">
       {
         caseStudies.map((cs) => (
-          <article class="case-card reveal" data-category={cs.data.category}>
+          <article class="case-card reveal" data-category={cs.data.category} data-sector={cs.data.sector}>
             <a href={`/case-studies/${cs.id}`} style="text-decoration:none; color:inherit; display:flex; flex-direction:column; height:100%;">
               <div class="case-visual"><span class="mono">// {cs.data.sector.toUpperCase()}</span></div>
               <div class="case-body">
@@ -66,18 +76,48 @@ const crumbs = [
 </BaseLayout>
 
 <script>
-  const pills = document.querySelectorAll<HTMLButtonElement>(".filter-pill");
   const cards = document.querySelectorAll<HTMLElement>("#caseGrid .case-card");
+  const filterEmpty = document.getElementById("filterEmpty");
+  const groups = document.querySelectorAll<HTMLElement>("[data-filter-group]");
 
-  pills.forEach((pill) => {
-    pill.addEventListener("click", () => {
-      pills.forEach((p) => p.classList.remove("active"));
-      pill.classList.add("active");
-      const filter = pill.dataset.filter;
-      cards.forEach((card) => {
-        const match = filter === "all" || card.dataset.category === filter;
-        card.style.display = match ? "" : "none";
+  const active: Record<string, string> = { category: "all", sector: "all" };
+
+  function applyFilters() {
+    let visibleCount = 0;
+    cards.forEach((card) => {
+      const matchesCategory = active.category === "all" || card.dataset.category === active.category;
+      const matchesSector = active.sector === "all" || card.dataset.sector === active.sector;
+      const match = matchesCategory && matchesSector;
+      card.style.display = match ? "" : "none";
+      if (match) visibleCount++;
+    });
+    if (filterEmpty) filterEmpty.hidden = visibleCount > 0;
+  }
+
+  groups.forEach((group) => {
+    const groupKey = group.dataset.filterGroup as string;
+    const pills = group.querySelectorAll<HTMLButtonElement>(".filter-pill");
+    pills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        pills.forEach((p) => p.classList.remove("active"));
+        pill.classList.add("active");
+        active[groupKey] = pill.dataset.filter || "all";
+        applyFilters();
       });
     });
   });
 </script>
+
+<style>
+  .filter-row-sector { margin-top: 12px; }
+  .filter-pill-sector {
+    font-size: 0.8rem;
+    padding: 7px 14px;
+    opacity: 0.85;
+  }
+  .filter-empty {
+    color: var(--text-faint);
+    font-size: 0.92rem;
+    margin: 28px 0 0;
+  }
+</style>

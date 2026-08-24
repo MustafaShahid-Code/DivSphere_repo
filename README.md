@@ -465,6 +465,66 @@ verify. Leave both blank (the default) to keep honeypot-only protection.
 
 ---
 
+## The inquiry inbox
+
+Every contact form submission is emailed (as above) **and** saved to a
+database, so it shows up at `/admin/inbox/` with read/unread status and can
+be replied to from there — a reply goes out to the customer's own email
+address via SMTP. This is a separate system from the CMS at `/admin/`: the
+CMS only edits git-committed content and (in production) authenticates via
+GitHub OAuth, neither of which fits a live, constantly-changing list of
+form submissions. The inbox instead runs on a small MySQL database and its
+own login, right on the same Hostinger hosting.
+
+**Setup (three parts, all in `public/inbox/`):**
+
+1. **Database.** In hPanel → Databases → MySQL Databases, create a
+   database and a user for it. Open phpMyAdmin for that database, go to
+   Import, and run `public/inbox/schema.sql` — this creates the two tables
+   the inbox uses (`inquiries` and `inquiry_replies`).
+2. **Config file.** Copy `public/inbox/config.sample.php` to
+   `public/inbox/config.php` and fill in every value: the database
+   credentials from step 1, an SMTP account to send replies from (your
+   `info@divsphere.co` mailbox's SMTP details, found in hPanel → Emails →
+   that mailbox → Configuration — or a transactional provider like Resend),
+   and an inbox login. **Use the same username/password as the CMS admin**
+   (`ADMIN_USER` / `ADMIN_PASSWORD` in `.env`) so there's one set of
+   credentials to remember — but note the file wants a *hash* of the
+   password, not the password itself:
+   ```
+   php -r "echo password_hash('your-real-password', PASSWORD_DEFAULT), PHP_EOL;"
+   ```
+   Paste the resulting `$2y$...` string in as `INBOX_PASSWORD_HASH`.
+3. **Upload `config.php` directly to the server** (FTP or File Manager) —
+   it is deliberately excluded from git (see `.gitignore`) since it holds
+   real credentials. Uploading it outside the normal CMS/GitHub deploy flow
+   is expected; it never needs to change again unless a credential does.
+
+Once all three are done, `/admin/inbox/` is live. Until then, everything
+degrades gracefully rather than breaking: the contact form still emails
+enquiries exactly as before, `/admin/inbox/` shows its sign-in screen (just
+with nothing to sign into yet), and the little "Inquiries" pill in the top
+corner of `/admin/` simply never shows an unread dot.
+
+**Using it:** the CMS admin page polls for unread enquiries and shows a red
+dot on the "Inquiries" link when there's something new — click through to
+`/admin/inbox/`, sign in, and pick an enquiry from the list. Opening one
+marks it read automatically. Reply from the text box under the message;
+it's sent as a plain-text email from `info@divsphere.co` (or whichever
+address you set as `SMTP_FROM_EMAIL`) with the customer's address as the
+Reply-To, and logged in the thread underneath so anyone else checking the
+inbox can see what's already been said. A reply that fails to send (bad
+SMTP credentials, mail server hiccup) is still logged, marked as failed,
+and shown that way in the thread — nothing is silently lost.
+
+The unread-count endpoint (`public/inbox/api.php?action=unread_count`) is
+deliberately reachable without signing in, so the dot on `/admin/` can
+light up before anyone has opened the inbox itself — it exposes a single
+number and nothing else. Every other action (reading a message, replying)
+requires the real server-side session set by signing in.
+
+---
+
 ## SEO — what's already handled
 
 - **Static pre-rendering.** Full HTML in the first response, no JS required.
@@ -472,7 +532,7 @@ verify. Leave both blank (the default) to keep honeypot-only protection.
 - **Unique title + meta description on every page**, all within Google's display limits.
 - **Canonical URLs** on every page.
 - **Open Graph + Twitter cards** for link previews.
-- **Structured data (JSON-LD):** `ProfessionalService`, `WebSite`, `BreadcrumbList` sitewide; `BlogPosting` on articles; `JobPosting` on careers (eligible for Google Jobs); `ItemList` of services; `ContactPage`.
+- **Structured data (JSON-LD):** `ProfessionalService`, `WebSite`, `BreadcrumbList` sitewide; `BlogPosting` on articles; `JobPosting` on careers (eligible for Google Jobs); `ItemList` of services; `ContactPage`; `FAQPage` on the homepage FAQ section (eligible for expandable FAQ rich results — keep answers accurate, they can render directly in Google's results).
 - **Auto-generated `sitemap.xml`**, regenerated on every build.
 - **`robots.txt`** pointing at the sitemap and blocking `/admin` plus tracking-parameter URLs.
 - **Self-hosted fonts** — no third-party connection on the critical path, which helps Largest Contentful Paint.
@@ -541,6 +601,7 @@ src/
 │   ├── rss.xml.ts          → /rss.xml
 │   ├── contact.astro       → /contact
 │   ├── admin/index.astro   → /admin (CMS + local login gate)
+│   ├── admin/inbox.astro   → /admin/inbox (inquiry inbox — see "The inquiry inbox" above)
 │   ├── 404.astro
 │   └── robots.txt.ts       → /robots.txt
 └── styles/
@@ -548,9 +609,15 @@ src/
     └── admin-theme.css      ← restyles the bundled Decap CMS to match
 public/
 ├── admin/                  ← Decap CMS
-├── contact-handler.php     ← PHP mail handler, replaces Netlify Forms
+├── inbox/                  ← inquiry inbox backend (PHP + MySQL, see README section above)
+│   ├── config.sample.php   ← copy to config.php and fill in — config.php is gitignored
+│   ├── schema.sql           ← run once against your database
+│   ├── api.php, auth.php, db.php, mail.php, login.php, logout.php
+│   └── lib/PHPMailer/       ← vendored directly, no Composer needed on the host
+├── contact-handler.php     ← PHP mail handler, replaces Netlify Forms — also stores to the inbox DB
 ├── newsletter-handler.php  ← PHP mail handler for the newsletter signup form
 ├── downloads/               ← lead-magnet PDFs linked from /resources
+├── og-default.png           ← default social share image (1200×630)
 ├── .htaccess               ← headers + /admin noindex, replaces netlify.toml
 └── favicon.svg
 oauth-proxy/                ← self-hosted GitHub OAuth proxy for CMS login

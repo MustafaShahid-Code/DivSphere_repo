@@ -27,6 +27,7 @@
     "caseStudiesPreview": true,
     "testimonials": true,
     "industries": true,
+    "faq": true,
     "ctaBand": true
   },
   "capabilitiesIntro": {
@@ -85,6 +86,36 @@
     "Public Sector",
     "Manufacturing",
     "Energy"
+  ],
+  "faqIntro": {
+    "eyebrow": "Questions",
+    "heading": "Before you reach out."
+  },
+  "faqs": [
+    {
+      "question": "How is a project priced — fixed price or time and materials?",
+      "answer": "Both, depending on how well-defined the work is. A clearly scoped deliverable (a rebuild, a defined integration, a security audit) is usually fixed price, agreed after a short discovery phase. Ongoing product development or an embedded team works better as time and materials with a monthly cap. We'll recommend one during the first call and explain the trade-offs — we don't lock you into a model that doesn't fit."
+    },
+    {
+      "question": "How long does a typical engagement take?",
+      "answer": "A focused project (an audit, an MVP, a single integration) usually runs 6–10 weeks. Larger builds — ERP rollouts, platform rebuilds, multi-phase migrations — typically run 4–9 months, delivered in two-week cycles so you have a working build in hand from sprint one rather than waiting until the end."
+    },
+    {
+      "question": "We already have an in-house engineering team — can you still help?",
+      "answer": "Yes, this is a large part of what we do. We slot in as an extension of an existing team for a specific gap — a cloud migration, a security review, extra capacity during a crunch — reporting into your process rather than replacing it. See IT Outsourcing under Services."
+    },
+    {
+      "question": "Do you work with early-stage companies, or only larger organizations?",
+      "answer": "Both. Startups typically come to us for a first product build or to harden something built quickly pre-funding; larger organizations more often bring ERP, data, or security work. Pricing and process adjust to the size of the engagement either way."
+    },
+    {
+      "question": "Who owns the code and IP once the project ships?",
+      "answer": "You do. Every engagement is covered by an NDA before any details are shared, and the contract assigns IP in the deliverables to you on final payment — there's no vendor lock-in to us specifically."
+    },
+    {
+      "question": "Where is DivSphere based, and do you work with clients outside Pakistan?",
+      "answer": "We're headquartered in Karachi, Pakistan, and deliver for clients across South Asia, the Gulf, and beyond — remotely, with overlap hours agreed up front for standups and reviews. Enquiries get a response within one business day."
+    }
   ],
   "ctaBand": {
     "eyebrow": "Let's talk",

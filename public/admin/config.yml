@@ -169,6 +169,7 @@ collections:
               - { name: "caseStudiesPreview", label: "Case studies preview", widget: "boolean", default: true }
               - { name: "testimonials", label: "Testimonials", widget: "boolean", default: true }
               - { name: "industries", label: "Industries strip", widget: "boolean", default: true }
+              - { name: "faq", label: "FAQ", widget: "boolean", default: true }
               - { name: "ctaBand", label: "Closing CTA band", widget: "boolean", default: true }
           - name: "capabilitiesIntro"
             label: "Capabilities — section heading"
@@ -210,6 +211,20 @@ collections:
               - { name: "eyebrow", label: "Eyebrow", widget: "string" }
               - { name: "heading", label: "Heading", widget: "string" }
           - { name: "industries", label: "Industries", widget: "list", hint: "One per line." }
+          - name: "faqIntro"
+            label: "FAQ — section heading"
+            widget: "object"
+            fields:
+              - { name: "eyebrow", label: "Eyebrow", widget: "string" }
+              - { name: "heading", label: "Heading", widget: "string" }
+          - name: "faqs"
+            label: "FAQ"
+            widget: "list"
+            summary: "{{fields.question}}"
+            hint: "Also emitted as FAQPage structured data for Google — keep answers accurate, they may show directly in search results."
+            fields:
+              - { name: "question", label: "Question", widget: "string" }
+              - { name: "answer", label: "Answer", widget: "text" }
           - name: "ctaBand"
             label: "Closing CTA band"
             widget: "object"

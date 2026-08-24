@@ -33,6 +33,18 @@ const serviceSchema = [
       },
     })),
   },
+  ...(sections.faq && home.faqs?.length
+    ? [
+        {
+          "@type": "FAQPage",
+          mainEntity: home.faqs.map((f: { question: string; answer: string }) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
+          })),
+        },
+      ]
+    : []),
 ];
 ---
 
@@ -207,6 +219,32 @@ const serviceSchema = [
           </div>
           <div class="industries-strip reveal">
             {home.industries.map((i) => <span class="industry-pill">{i}</span>)}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      sections.faq && home.faqs?.length > 0 && (
+        <div class="wrap" style="margin-top:96px;">
+          <div class="section-head reveal" style="margin-bottom:28px;">
+            <div>
+              <span class="eyebrow">{home.faqIntro.eyebrow}</span>
+              <h2 style="margin-top:14px;">{home.faqIntro.heading}</h2>
+            </div>
+          </div>
+          <div class="faq-list reveal">
+            {home.faqs.map((f: { question: string; answer: string }, i: number) => (
+              <details class="faq-item" name="faq">
+                <summary>
+                  <span>{f.question}</span>
+                  <svg class="faq-chevron" width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true">
+                    <path d="M1 1L7 7L13 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </summary>
+                <p>{f.answer}</p>
+              </details>
+            ))}
           </div>
         </div>
       )
