@@ -35,6 +35,8 @@ const schema = [
  */
 const FORM_NAME = "contact";
 const FORM_ENDPOINT = "/contact-handler.php";
+
+const waDigits = site.contact.whatsapp.replace(/\D/g, "");
 ---
 
 <BaseLayout
@@ -61,8 +63,28 @@ const FORM_ENDPOINT = "/contact-handler.php";
         </div>
         <div class="info-block">
           <h2 class="info-label">Phone</h2>
-          <a href={`tel:${site.contact.phoneRaw}`}>{site.contact.phone}</a>
+          <p>
+            <a href={`tel:${site.contact.phoneRaw}`}>{site.contact.phone}</a>
+            {
+              site.contact.phoneSecondary && (
+                <>
+                  <br />
+                  <a href={`tel:${site.contact.phoneSecondaryRaw}`}>{site.contact.phoneSecondary}</a>
+                </>
+              )
+            }
+          </p>
         </div>
+        {
+          waDigits && (
+            <div class="info-block">
+              <h2 class="info-label">WhatsApp</h2>
+              <a href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener noreferrer">
+                Chat with us &rarr;
+              </a>
+            </div>
+          )
+        }
         <div class="info-block">
           <h2 class="info-label">Headquarters</h2>
           <p>{contact.locationNote}</p>

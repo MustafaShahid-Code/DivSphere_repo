@@ -13,6 +13,14 @@
  * ─────────────────────────────────────────────────────────────
  */
 
+/**
+ * Phone numbers and the WhatsApp number are CMS-editable — see
+ * Site Settings → Contact Details in /admin. Everything else on this
+ * page (name, address, email) is still code-only; move it here the
+ * same way if it needs to become editable later.
+ */
+import contactDetails from "../data/contactDetails.json";
+
 export const site = {
   /** Company name. Appears in titles, footer, and structured data. */
   name: "DivSphere",
@@ -29,29 +37,35 @@ export const site = {
 
   /** Default meta description — used on pages that don't set their own. */
   description:
-    "DivSphere designs, builds, and operates software, cloud, and data infrastructure for companies that need a technology partner who ships. Based in Doha, serving clients across the Gulf and beyond.",
+    "DivSphere designs, builds, and operates software, cloud, and data infrastructure for companies that need a technology partner who ships. Based in Karachi, serving clients across Pakistan, the Gulf, and beyond.",
 
   /** Default social share image, relative to /public. 1200×630 recommended. */
   ogImage: "/og-default.png",
 
   /** Primary language and locale. */
   lang: "en",
-  locale: "en_QA",
+  locale: "en_PK",
 
   contact: {
     email: "info@divsphere.co",
-    phone: "+974 4000 0000",
+    /** Primary number — CMS-editable, see Site Settings → Contact Details. */
+    phone: contactDetails.phone,
     /** E.164 format for tel: links and structured data. */
-    phoneRaw: "+97440000000",
+    phoneRaw: contactDetails.phoneRaw,
+    /** Secondary number — CMS-editable. */
+    phoneSecondary: contactDetails.phoneSecondary,
+    phoneSecondaryRaw: contactDetails.phoneSecondaryRaw,
+    /** Digits only, no "+" — the format wa.me links require. CMS-editable. */
+    whatsapp: contactDetails.whatsapp,
   },
 
   address: {
     street: "",
-    city: "Doha",
-    region: "",
+    city: "Karachi",
+    region: "Sindh",
     postalCode: "",
-    country: "QA",
-    countryName: "Qatar",
+    country: "PK",
+    countryName: "Pakistan",
   },
 
   /** Social profiles. Empty strings are skipped in structured data. */
@@ -64,7 +78,7 @@ export const site = {
   },
 
   /** Regions served — feeds the `areaServed` field in structured data. */
-  areaServed: ["Qatar", "Gulf Cooperation Council", "Middle East", "South Asia"],
+  areaServed: ["Pakistan", "South Asia", "Middle East", "Gulf Cooperation Council"],
 
   /**
    * ── TRACKING & CAMPAIGN IDS ──────────────────────────────

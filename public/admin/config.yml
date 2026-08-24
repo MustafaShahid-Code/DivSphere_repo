@@ -89,6 +89,35 @@ collections:
             default: "DivSphere"
             hint: "Read by screen readers. Usually just the company name."
 
+      # ---- Contact Details ----
+      - name: "contactDetails"
+        label: "Contact Details"
+        file: "src/data/contactDetails.json"
+        description: "Phone numbers and the WhatsApp number used sitewide — header, footer, the Contact page, and the floating WhatsApp button. Changing these here updates every page on the next publish, no code changes needed."
+        fields:
+          - name: "phone"
+            label: "Primary phone (displayed)"
+            widget: "string"
+            hint: "Shown to visitors as-is, e.g. +92 333 1282959. Formatting is up to you."
+          - name: "phoneRaw"
+            label: "Primary phone (link format)"
+            widget: "string"
+            hint: "Digits only, with a leading +, e.g. +923331282959. Used for the tel: link behind the primary number and in SEO data — no spaces or dashes."
+          - name: "phoneSecondary"
+            label: "Secondary phone (displayed)"
+            widget: "string"
+            required: false
+            hint: "Shown to visitors as-is. Leave blank to hide the second number everywhere."
+          - name: "phoneSecondaryRaw"
+            label: "Secondary phone (link format)"
+            widget: "string"
+            required: false
+            hint: "Digits only, with a leading +. Used for its tel: link."
+          - name: "whatsapp"
+            label: "WhatsApp number"
+            widget: "string"
+            hint: "Digits only, with the country code and NO leading + (e.g. 923331282959, not +92 333 1282959). This is what WhatsApp's own links require — the floating WhatsApp button and the Contact page link both use it."
+
       # ---- Theme ----
       - name: "theme"
         label: "Theme"

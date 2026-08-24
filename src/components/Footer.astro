@@ -2,6 +2,7 @@
 import { site, clusters } from "../config/site";
 import brand from "../data/brand.json";
 const year = new Date().getFullYear();
+const waDigits = site.contact.whatsapp.replace(/\D/g, "");
 ---
 
 <footer>
@@ -41,6 +42,20 @@ const year = new Date().getFullYear();
         <ul>
           <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
           <li><a href={`tel:${site.contact.phoneRaw}`}>{site.contact.phone}</a></li>
+          {
+            site.contact.phoneSecondary && (
+              <li><a href={`tel:${site.contact.phoneSecondaryRaw}`}>{site.contact.phoneSecondary}</a></li>
+            )
+          }
+          {
+            waDigits && (
+              <li>
+                <a href={`https://wa.me/${waDigits}`} target="_blank" rel="noopener noreferrer">
+                  WhatsApp
+                </a>
+              </li>
+            )
+          }
           <li><a href="/contact">{site.address.city}, {site.address.countryName}</a></li>
         </ul>
       </div>

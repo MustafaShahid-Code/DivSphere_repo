@@ -1,0 +1,82 @@
+---
+/**
+ * WhatsAppButton.astro — floating "Chat on WhatsApp" button shown on
+ * every public page (mounted once, in BaseLayout).
+ *
+ * The number itself is CMS-editable — Site Settings → Contact Details
+ * in /admin, `src/data/contactDetails.json` under the hood — so
+ * marketing can change it without a code change or a developer.
+ *
+ * Defensive parsing: wa.me links require digits only, no "+", spaces,
+ * or dashes. The CMS hint says so, but an editor will eventually paste
+ * a formatted number anyway — stripping non-digits here means that
+ * mistake doesn't break the link.
+ */
+import { site } from "../config/site";
+
+const digitsOnly = site.contact.whatsapp.replace(/\D/g, "");
+const waLink = digitsOnly
+  ? `https://wa.me/${digitsOnly}?text=${encodeURIComponent(`Hi ${site.name}, I'd like to talk about a project.`)}`
+  : null;
+---
+
+{
+  waLink && (
+    <a
+      class="whatsapp-float"
+      href={waLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Chat with ${site.name} on WhatsApp`}
+    >
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51-.173-.008-.372-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+        <path d="M12.004 2C6.486 2 2.01 6.476 2.01 11.994c0 1.995.588 3.85 1.6 5.408L2 22l4.71-1.578a9.936 9.936 0 0 0 5.294 1.518h.004c5.518 0 9.994-4.476 9.994-9.994C21.996 6.476 17.522 2 12.004 2Zm0 18.163a8.14 8.14 0 0 1-4.155-1.14l-.298-.177-3.09 1.036 1.052-3.014-.194-.31a8.15 8.15 0 0 1-1.244-4.364c0-4.506 3.667-8.173 8.173-8.173 4.505 0 8.172 3.667 8.172 8.173 0 4.505-3.667 8.172-8.172 8.172Z" />
+      </svg>
+    </a>
+  )
+}
+
+<style>
+  .whatsapp-float {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 90;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #25d366;
+    color: #fff;
+    box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .whatsapp-float:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 14px 32px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  }
+
+  .whatsapp-float:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 560px) {
+    .whatsapp-float {
+      right: 14px;
+      bottom: 14px;
+      width: 52px;
+      height: 52px;
+    }
+
+    /* Clears the mobile consent banner (bottom:16px, spans full width)
+       so the two never overlap when both are visible at once. */
+    body:has(.consent-banner[data-open="true"]) .whatsapp-float {
+      bottom: 180px;
+    }
+  }
+</style>

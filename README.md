@@ -86,6 +86,8 @@ npm run check    # type-check the project
 ### What the CMS controls
 
 **Site Settings**
+- **Brand** — logo mark and favicon
+- **Contact Details** — primary/secondary phone numbers and the WhatsApp number, used sitewide (header, footer, Contact page, floating WhatsApp button)
 - **Theme** — five accent palettes
 - **Homepage** — hero copy, stat readout, every section heading, show/hide each section, process steps, industries, closing CTA
 - **About Page** — hero, values, milestones, practice areas
@@ -99,9 +101,10 @@ npm run check    # type-check the project
 - **Testimonials**
 - **Open Roles**
 
-Everything above is editable without touching code. The only things still in
-code are the company name, contact details, and domain — all in one file,
-`src/config/site.ts`.
+Everything above is editable without touching code. Phone numbers and the
+WhatsApp number are also CMS-editable (Site Settings → Contact Details, see
+above). What's still code-only — company name, email address, physical
+address, and domain — lives in one file, `src/config/site.ts`.
 
 ---
 
@@ -353,6 +356,33 @@ changes again.
 
 ---
 
+## Phone numbers and WhatsApp
+
+All in **Site Settings → Contact Details** in the CMS — primary phone,
+an optional secondary phone, and the WhatsApp number. Change any of these
+and rebuild; no developer needed.
+
+- The **primary** and **secondary** phone fields each have a "displayed"
+  version (shown as typed, e.g. `+92 333 1282959`) and a "link format"
+  version (`tel:` links need digits-only with a leading `+`, no spaces —
+  e.g. `+923331282959`). Leave the secondary pair blank to hide the second
+  number everywhere.
+- The **WhatsApp** field is digits-only with the country code and **no**
+  leading `+` (e.g. `923331282959`) — that's the format `wa.me` links
+  require. The code strips any stray `+`/spaces/dashes defensively, so a
+  differently-formatted entry still works, but entering it correctly avoids
+  relying on that.
+
+These feed three places at once: the header/footer/Contact page numbers,
+the Contact page's structured data (`SEO.astro`), and a floating "Chat on
+WhatsApp" button shown on every public page
+(`src/components/WhatsAppButton.astro`, mounted in `BaseLayout.astro`) —
+it opens `wa.me` with a pre-filled greeting message in a new tab. The
+button hides itself automatically if the WhatsApp field is ever left
+blank, rather than linking nowhere.
+
+---
+
 ## Tracking and campaigns
 
 All four tags are wired and gated behind **Google Consent Mode v2**. Set the IDs you have; leave the rest blank.
@@ -370,7 +400,7 @@ Nothing loads in development, so local traffic never pollutes your reporting.
 
 Google requires it for ads served to EEA and UK users. Without it, conversions from those regions are discarded and remarketing audiences stop building. Tags load in a *denied* state and only start collecting identifiers after the visitor accepts.
 
-If you only ever advertise inside Qatar and the GCC this is not strictly required — but it costs nothing and means you're covered the moment you run a campaign into Europe.
+If you only ever advertise inside Pakistan and South Asia this is not strictly required — but it costs nothing and means you're covered the moment you run a campaign into Europe.
 
 ### Conversion tracking
 
@@ -400,9 +430,9 @@ SEO infrastructure gets you indexed. It doesn't get you ranked — that comes fr
 
 1. **Write real blog content.** The six posts are placeholders with a title and two paragraphs. Thin content does not rank. Aim for 800–1,500 genuinely useful words per post.
 2. **Replace the placeholder case studies and stats** with real projects and real numbers.
-3. **Create a Google Business Profile** for the Doha office. For local searches like "software company Doha", this often matters more than anything on the website.
+3. **Create a Google Business Profile** for the Karachi office. For local searches like "software company Karachi", this often matters more than anything on the website.
 4. **Earn links.** Directory listings, partner sites, professional bodies, local press.
-5. **Add each service as its own page** once you know which terms convert. One page per high-intent keyword ("ERP implementation Qatar") outranks one page listing twenty services.
+5. **Add each service as its own page** once you know which terms convert. One page per high-intent keyword ("ERP implementation Pakistan") outranks one page listing twenty services.
 
 ### After launch
 
@@ -497,8 +527,8 @@ The technical work is done and verified. What it gets you is **indexed** —
 not **ranked**. Rankings come from:
 
 1. **Real content.** Replace the placeholder posts and case studies.
-2. **A Google Business Profile** for the Doha office. For searches like
-   "software company Doha", this often outweighs anything on the website.
+2. **A Google Business Profile** for the Karachi office. For searches like
+   "software company Karachi", this often outweighs anything on the website.
 3. **Links.** Directory listings, partner sites, professional bodies, press.
 4. **Per-service pages** once you know which terms convert. One page targeting
-   "ERP implementation Qatar" outranks one page listing twenty services.
+   "ERP implementation Pakistan" outranks one page listing twenty services.

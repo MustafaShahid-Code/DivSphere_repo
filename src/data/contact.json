@@ -5,10 +5,10 @@
     "lede": "Fill in a few details and a member of our delivery team will reply within one business day."
   },
   "seo": {
-    "description": "Talk to DivSphere about a software, cloud, data, or security project. Based in Doha, Qatar. We reply within one business day."
+    "description": "Talk to DivSphere about a software, cloud, data, or security project. Based in Karachi, Pakistan. We reply within one business day."
   },
-  "responseTime": "One business day, Sunday–Thursday.",
-  "locationNote": "Doha, Qatar — serving clients across the Gulf, Africa, and South Asia.",
+  "responseTime": "One business day, Monday–Friday.",
+  "locationNote": "Karachi, Pakistan — serving clients across South Asia, the Gulf, and beyond.",
   "successMessage": "Thanks — your message has been received. A member of our team will reply within one business day.",
   "errorMessage": "Something went wrong sending your message. Please email us directly and we'll pick it up straight away."
 }
