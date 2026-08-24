@@ -164,12 +164,13 @@
   background: var(--surface) !important;
   border: 1px solid var(--line) !important;
   border-radius: 10px !important;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 [class*="ListCard"]:hover {
   border-color: var(--accent-line) !important;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.4);
 }
 
 [class*="ListCardTitle"],
