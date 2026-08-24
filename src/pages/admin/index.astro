@@ -466,8 +466,18 @@ const expectedHash = createHash("sha256")
       }
 
       .inbox-link {
+        /*
+         * Deliberately bottom-anchored, NOT top — Decap's own AppHeader
+         * (the "Quick add / site name / avatar" bar) is mounted by the
+         * CMS app itself once signed in, and it visually covers the top
+         * of the viewport including the top-right corner. The theme
+         * toggle and log-out button below already prove the bottom
+         * corners stay clear of Decap's chrome, so this lives there too
+         * — stacked above gate-logout with a 60px gap so neither control
+         * overlaps the other when both are visible (local dev only).
+         */
         position: fixed;
-        top: 18px;
+        bottom: 78px;
         right: 18px;
         z-index: 40;
         display: flex;
