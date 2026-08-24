@@ -369,6 +369,11 @@
     position:relative;
     z-index:1;
   }
+  .footer-newsletter{
+    padding-bottom:36px;
+    margin-bottom:36px;
+    border-bottom:1px solid var(--line);
+  }
   .footer-grid{
     display:grid;
     grid-template-columns:1.4fr 1fr 1fr 1fr;
@@ -595,11 +600,16 @@
   .service-cluster-head h2{font-size:1.5rem;}
   .service-list{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
   .service-item{
+    display:block;
     padding:18px 20px;
     border:1px solid var(--line);
     border-radius:8px;
     background:var(--surface);
+    text-decoration:none;
+    transition:border-color 0.15s ease, transform 0.15s ease;
   }
+  .service-item:hover{border-color:var(--accent-line); transform:translateY(-2px);}
+  .service-item h3,
   .service-item h4{font-size:0.96rem; font-family:var(--font-display); font-weight:700; margin-bottom:6px;}
   .service-item p{font-size:0.85rem; color:var(--text-muted);}
   @media (max-width:900px){
@@ -943,3 +953,67 @@
 }
 .error-box.show{display:block;}
 .success-box{margin-bottom:20px;}
+
+/* ================= NEWSLETTER SIGNUP ================= */
+.sr-only{
+  position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+.newsletter-signup h4{
+  font-family:var(--font-mono); font-weight:500; font-size:0.74rem;
+  letter-spacing:0.14em; text-transform:uppercase; color:var(--text-faint);
+  margin-bottom:10px;
+}
+.newsletter-body{color:var(--text-muted); font-size:0.88rem; margin-bottom:16px; max-width:38ch;}
+.newsletter-form{display:flex; gap:10px;}
+.newsletter-form input[type="email"]{
+  flex:1; min-width:0; padding:11px 14px; border-radius:8px;
+  border:1px solid var(--line); background:var(--surface); color:var(--text);
+  font-size:0.88rem; font-family:inherit;
+}
+.newsletter-form input[type="email"]:focus{outline:2px solid var(--accent-line); outline-offset:1px;}
+.newsletter-status{
+  display:none; font-size:0.82rem; color:var(--accent); margin-bottom:10px;
+}
+.newsletter-status.show{display:block;}
+.newsletter-status-error{color:#ff9b9b;}
+.newsletter-status-error a{color:inherit; text-decoration:underline;}
+@media (max-width:480px){
+  .newsletter-form{flex-direction:column; align-items:stretch;}
+}
+
+/* Compact variant — used in the footer, sits alongside the link columns. */
+.newsletter-compact .newsletter-form{max-width:320px;}
+.newsletter-compact .newsletter-status{font-size:0.78rem;}
+
+/* ================= RESOURCES / LEAD MAGNETS ================= */
+.resource-list{display:flex; flex-direction:column; gap:16px;}
+.resource-card{
+  display:flex;
+  align-items:center;
+  gap:24px;
+  padding:26px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+}
+.resource-icon{
+  flex-shrink:0;
+  width:56px; height:64px;
+  border-radius:6px;
+  background:var(--accent-soft);
+  border:1px solid var(--accent-line);
+  color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-size:0.72rem; font-weight:700; letter-spacing:0.05em;
+}
+.resource-body{flex:1; min-width:0;}
+.resource-meta{
+  display:flex; gap:8px; align-items:center;
+  font-family:var(--font-mono); font-size:0.76rem; color:var(--text-faint);
+}
+.resource-download{flex-shrink:0; white-space:nowrap;}
+@media (max-width:640px){
+  .resource-card{flex-direction:column; align-items:flex-start;}
+  .resource-download{width:100%; text-align:center;}
+}

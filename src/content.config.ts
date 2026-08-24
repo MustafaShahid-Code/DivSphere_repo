@@ -15,6 +15,9 @@ const services = defineCollection({
     title: z.string(),
     cluster: z.enum(["build", "run", "learn", "transform", "shape", "protect", "sustain"]),
     description: z.string(),
+    /** Optional SEO overrides for the individual service detail page. */
+    seoTitle: z.string().optional(),
+    seoDescription: z.string().optional(),
     order: z.number().default(0),
     draft: z.boolean().default(false),
   }),
@@ -85,6 +88,15 @@ const careers = defineCollection({
     department: z.string(),
     employmentType: z.string(),
     location: z.string(),
+    /**
+     * Optional real posting date for JobPosting schema. Falls back to
+     * build time when not set — see the datePosted comment in
+     * careers/[...slug].astro for why setting this matters.
+     */
+    datePosted: z.coerce.date().optional(),
+    /** Optional SEO overrides for the individual role detail page. */
+    seoTitle: z.string().optional(),
+    seoDescription: z.string().optional(),
     order: z.number().default(0),
     draft: z.boolean().default(false),
   }),

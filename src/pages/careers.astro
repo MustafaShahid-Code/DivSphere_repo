@@ -17,30 +17,38 @@ const crumbs = [
 
 /**
  * JobPosting structured data makes roles eligible for Google Jobs.
- * NOTE: dates are generated at build time. Google may drop stale
- * postings, so rebuild periodically or promote these to CMS fields.
+ * Each role now also has its own page (/careers/[slug]) with the same
+ * schema scoped to just that posting and a real per-role datePosted
+ * when set in the CMS — that's the copy Google actually prefers, since
+ * it resolves to a URL for that specific job. This listing-page bundle
+ * is kept as a secondary signal; it still falls back to build time
+ * when a role has no datePosted set.
  */
 const now = new Date();
-const validThrough = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
 
-const schema = roles.map((r) => ({
-  "@type": "JobPosting",
-  title: r.data.title,
-  description: `${r.data.title} — ${r.data.department} at ${site.name}. ${r.data.employmentType}, ${r.data.location}.`,
-  datePosted: now.toISOString().split("T")[0],
-  validThrough: validThrough.toISOString().split("T")[0],
-  employmentType: r.data.employmentType.toUpperCase().replace(/[^A-Z]/g, "_"),
-  hiringOrganization: { "@type": "Organization", name: site.name, sameAs: site.url },
-  jobLocation: {
-    "@type": "Place",
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: site.address.city,
-      addressCountry: site.address.country,
+const schema = roles.map((r) => {
+  const datePosted = r.data.datePosted ?? now;
+  const validThrough = new Date(datePosted.getFullYear(), datePosted.getMonth() + 3, datePosted.getDate());
+  return {
+    "@type": "JobPosting",
+    title: r.data.title,
+    description: r.data.seoDescription || `${r.data.title} — ${r.data.department} at ${site.name}. ${r.data.employmentType}, ${r.data.location}.`,
+    datePosted: datePosted.toISOString().split("T")[0],
+    validThrough: validThrough.toISOString().split("T")[0],
+    employmentType: r.data.employmentType.toUpperCase().replace(/[^A-Z]/g, "_"),
+    hiringOrganization: { "@type": "Organization", name: site.name, sameAs: site.url },
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: site.address.city,
+        addressCountry: site.address.country,
+      },
     },
-  },
-  directApply: true,
-}));
+    directApply: true,
+    url: `${site.url}/careers/${r.id}`,
+  };
+});
 ---
 
 <BaseLayout
@@ -89,13 +97,13 @@ const schema = roles.map((r) => ({
       roles.length > 0 ? (
         <div class="role-list reveal">
           {roles.map((r) => (
-            <a href="/contact" class="role-row">
+            <a href={`/careers/${r.id}`} class="role-row">
               <h3 style="font-size:1rem; font-family:var(--font-display);">{r.data.title}</h3>
               <span class="role-meta">{r.data.department.toUpperCase()}</span>
               <span class="role-meta">
                 {r.data.employmentType.toUpperCase()} &middot; {r.data.location.toUpperCase()}
               </span>
-              <span class="role-arrow">Apply &rarr;</span>
+              <span class="role-arrow">View role &rarr;</span>
             </a>
           ))}
         </div>

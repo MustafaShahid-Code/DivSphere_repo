@@ -1,12 +1,17 @@
 ---
 import { site, clusters } from "../config/site";
 import brand from "../data/brand.json";
+import NewsletterSignup from "./NewsletterSignup.astro";
 const year = new Date().getFullYear();
 const waDigits = site.contact.whatsapp.replace(/\D/g, "");
 ---
 
 <footer>
   <div class="wrap">
+    <div class="footer-newsletter">
+      <NewsletterSignup compact source="footer" id="footer-newsletter" />
+    </div>
+
     <div class="footer-grid">
       <div class="footer-col">
         <div class="brand" style="margin-bottom:14px;">

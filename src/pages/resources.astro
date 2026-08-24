@@ -1,0 +1,108 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import NewsletterSignup from "../components/NewsletterSignup.astro";
+import { site } from "../config/site";
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "About", url: "/about" },
+  { name: "Resources", url: "/resources" },
+];
+
+/**
+ * Downloadable guides. Currently one — add more objects here as they're
+ * written, each pointing at a PDF placed in public/downloads/.
+ */
+const guides = [
+  {
+    title: "Scoping a Fixed-Price Software Project",
+    description:
+      "A practical checklist for founders and operators buying custom software — what a real scope document needs, the questions to ask before you accept a quote, and the red flags that predict a change-order fight later.",
+    file: "/downloads/Scoping-a-Fixed-Price-Software-Project.pdf",
+    pages: "4 pages",
+  },
+];
+
+const schema = [
+  {
+    "@type": "ItemList",
+    name: `${site.name} resources`,
+    itemListElement: guides.map((g, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "DigitalDocument",
+        name: g.title,
+        description: g.description,
+        url: `${site.url}${g.file}`,
+      },
+    })),
+  },
+];
+---
+
+<BaseLayout
+  title="Resources"
+  description="Free, practical guides for founders and operators buying software — scoping checklists, vendor-evaluation questions, and the things we wish clients knew before signing a contract."
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <div class="page-hero">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <span class="eyebrow">Resources</span>
+      <h1>Free guides for teams buying software.</h1>
+      <p class="lede">
+        The checklists and questions we actually use with clients — written down so you can use
+        them whether you end up working with us or someone else.
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap" style="padding:24px 0 96px;">
+    <div class="resource-list">
+      {
+        guides.map((g) => (
+          <div class="resource-card reveal">
+            <div class="resource-icon" aria-hidden="true">
+              PDF
+            </div>
+            <div class="resource-body">
+              <h2 style="font-size:1.15rem; font-family:var(--font-display); margin-bottom:8px;">
+                {g.title}
+              </h2>
+              <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:14px;">
+                {g.description}
+              </p>
+              <div class="resource-meta">
+                <span>{g.pages}</span>
+                <span>&middot;</span>
+                <span>Free, no signup required</span>
+              </div>
+            </div>
+            <a href={g.file} class="btn btn-primary resource-download" target="_blank" rel="noopener">
+              Download PDF &darr;
+            </a>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="cta-band reveal" style="margin-top:56px;">
+      <span class="eyebrow" style="justify-content:center;">More on the way</span>
+      <h2 style="margin-top:14px;">Want future guides sent to you directly?</h2>
+      <p style="margin-bottom:20px;">
+        Occasional dispatches when we publish something new — no spam, unsubscribe anytime.
+      </p>
+      <div style="display:flex; justify-content:center;">
+        <NewsletterSignup
+          source="resources-page"
+          id="resources-newsletter"
+          heading="Subscribe for new guides"
+          body=""
+        />
+      </div>
+    </div>
+  </div>
+</BaseLayout>

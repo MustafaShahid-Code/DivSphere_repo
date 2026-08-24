@@ -68,12 +68,12 @@ const schema = [
               </div>
               <div class="service-list">
                 {items.map((s) => (
-                  <div class="service-item">
+                  <a href={`/services/${s.id}`} class="service-item">
                     <h3 style="font-size:0.96rem; font-family:var(--font-display); font-weight:700; margin-bottom:6px;">
                       {s.data.title}
                     </h3>
                     <p>{s.data.description}</p>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>

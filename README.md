@@ -238,6 +238,7 @@ Variables tab**, add:
 |---|---|
 | `PUBLIC_SITE_URL` | `https://divsphere.co` — canonical URLs and the sitemap are generated from this |
 | `PUBLIC_GTM_ID`, `PUBLIC_GA4_ID`, `PUBLIC_META_PIXEL_ID`, `PUBLIC_LINKEDIN_PARTNER_ID`, `PUBLIC_GOOGLE_SITE_VERIFICATION` | none of these are set up yet — skip for now, add later once you have accounts with these tools (see "Tracking and campaigns" below) |
+| `PUBLIC_HCAPTCHA_SITE_KEY` | not set up yet — skip for now, add later if the contact form starts getting spam (see "Optional: hCaptcha on the contact form" below) |
 
 The workflow at `.github/workflows/deploy.yml` reads these on every build.
 
@@ -288,6 +289,10 @@ nothing else to configure. Locally, the form simulates success and logs the
 payload to the console instead of sending anything, so you can test the UI
 without a live backend.
 
+`public/newsletter-handler.php` (the footer/Resources page signup form)
+follows the same pattern and the same `$recipient` default — change it
+there too if the two should go to different inboxes.
+
 ### 10. Invite editors
 
 Anyone who should be able to publish needs **write access to the GitHub
@@ -313,12 +318,12 @@ organization) — that's what the OAuth login checks. They then log in at
 | 2 | Company name, email, phone, address | `src/config/site.ts` |
 | 3 | Social share image at `public/og-default.png` (1200×630) | — |
 | 4 | `public/apple-touch-icon.png` (180×180) | — |
-| 5 | Replace placeholder blog bodies with real articles | `/admin` |
-| 6 | Replace placeholder case studies with real projects | `/admin` |
-| 7 | Replace the hero stats (120+, 40+, 18) with real numbers | `/admin` |
-| 8 | Add tracking IDs | env vars |
-| 9 | Swap the CMS to the LIVE backend (GitHub login) and deploy the OAuth proxy | `public/admin/config.yml`, `oauth-proxy/` |
-| 10 | Change `ADMIN_USER` / `ADMIN_PASSWORD` from the defaults (local dev only — harmless to skip for production, since this gate doesn't run there) | `.env` |
+| 5 | Replace placeholder case studies with real projects | `/admin` |
+| 6 | Replace the hero stats (120+, 40+, 18) with real numbers | `/admin` |
+| 7 | Add tracking IDs | env vars |
+| 8 | Swap the CMS to the LIVE backend (GitHub login) and deploy the OAuth proxy | `public/admin/config.yml`, `oauth-proxy/` |
+| 9 | Change `ADMIN_USER` / `ADMIN_PASSWORD` from the defaults (local dev only — harmless to skip for production, since this gate doesn't run there) | `.env` |
+| 10 | Confirm the newsletter recipient address | `public/newsletter-handler.php` |
 
 ## Renaming the company
 
@@ -404,7 +409,30 @@ If you only ever advertise inside Pakistan and South Asia this is not strictly r
 
 ### Conversion tracking
 
-The contact form pushes a `generate_lead` event into `dataLayer` on submit. Build your GTM conversion trigger on that event and it will feed GA4, Google Ads, Meta, and LinkedIn from one place. The consent choice itself is pushed as `consent_choice`, so you can trigger on that too.
+The contact form pushes a `generate_lead` event into `dataLayer` on submit. Build your GTM conversion trigger on that event and it will feed GA4, Google Ads, Meta, and LinkedIn from one place. The consent choice itself is pushed as `consent_choice`, and the newsletter form pushes `newsletter_signup`, so you can trigger on those too.
+
+---
+
+## Optional: hCaptcha on the contact form
+
+The contact form ships with a honeypot field only, which stops most basic
+bots. If you start seeing real spam through it, add hCaptcha — it's a
+two-part switch, and until both parts are set the form works exactly as it
+does today (nothing breaks, nothing changes):
+
+1. Create a free account at [hcaptcha.com](https://www.hcaptcha.com) and
+   register the site to get a **site key** and a **secret key**.
+2. Add `PUBLIC_HCAPTCHA_SITE_KEY` as a build-time environment variable (same
+   place as `PUBLIC_SITE_URL` in step 5 of "Going live" above). This makes
+   the widget render on the contact form — nothing else changes yet.
+3. Open `public/contact-handler.php` and paste the **secret key** into
+   `$hcaptchaSecret` near the top of the file. This is what actually
+   verifies a solved captcha server-side; the site key alone only draws
+   the widget.
+
+Both steps are required — the site key without the secret renders a widget
+that's never checked; the secret without the site key has nothing to
+verify. Leave both blank (the default) to keep honeypot-only protection.
 
 ---
 
@@ -428,11 +456,13 @@ The contact form pushes a `generate_lead` event into `dataLayer` on submit. Buil
 
 SEO infrastructure gets you indexed. It doesn't get you ranked — that comes from content and links:
 
-1. **Write real blog content.** The six posts are placeholders with a title and two paragraphs. Thin content does not rank. Aim for 800–1,500 genuinely useful words per post.
-2. **Replace the placeholder case studies and stats** with real projects and real numbers.
-3. **Create a Google Business Profile** for the Karachi office. For local searches like "software company Karachi", this often matters more than anything on the website.
-4. **Earn links.** Directory listings, partner sites, professional bodies, local press.
-5. **Add each service as its own page** once you know which terms convert. One page per high-intent keyword ("ERP implementation Pakistan") outranks one page listing twenty services.
+1. **Replace the placeholder case studies and stats** with real projects and real numbers.
+2. **Create a Google Business Profile** for the Karachi office. For local searches like "software company Karachi", this often matters more than anything on the website.
+3. **Earn links.** Directory listings, partner sites, professional bodies, local press.
+
+Already done: every service and every open role now has its own indexable
+page (`/services/service-name`, `/careers/role-name`), and the six blog
+posts have real ~1,000–1,600 word bodies rather than placeholders.
 
 ### After launch
 
@@ -459,19 +489,26 @@ src/
 ├── components/
 │   ├── SEO.astro           ← all meta tags + JSON-LD
 │   ├── Nav.astro           ← Home / About ▾ / Services / Contact
-│   ├── Footer.astro
+│   ├── Footer.astro        ← includes the newsletter signup band
 │   ├── Breadcrumbs.astro
+│   ├── NewsletterSignup.astro ← reusable email-capture form
+│   ├── WhatsAppButton.astro
 │   ├── Analytics.astro     ← GTM, GA4, Meta, LinkedIn + Consent Mode
 │   └── ConsentBanner.astro
 ├── layouts/BaseLayout.astro
 ├── pages/                  ← one file = one URL
 │   ├── index.astro         → /
 │   ├── services.astro      → /services
+│   ├── services/[...slug].astro → /services/service-name
 │   ├── about.astro         → /about
 │   ├── case-studies.astro  → /case-studies
+│   ├── case-studies/[...slug].astro → /case-studies/project-name
 │   ├── careers.astro       → /careers
+│   ├── careers/[...slug].astro → /careers/role-name
+│   ├── resources.astro     → /resources (downloadable guides + newsletter)
 │   ├── blog/index.astro    → /blog
 │   ├── blog/[...slug].astro→ /blog/post-name
+│   ├── rss.xml.ts          → /rss.xml
 │   ├── contact.astro       → /contact
 │   ├── admin/index.astro   → /admin (CMS + local login gate)
 │   ├── 404.astro
@@ -482,6 +519,8 @@ src/
 public/
 ├── admin/                  ← Decap CMS
 ├── contact-handler.php     ← PHP mail handler, replaces Netlify Forms
+├── newsletter-handler.php  ← PHP mail handler for the newsletter signup form
+├── downloads/               ← lead-magnet PDFs linked from /resources
 ├── .htaccess               ← headers + /admin noindex, replaces netlify.toml
 └── favicon.svg
 oauth-proxy/                ← self-hosted GitHub OAuth proxy for CMS login
@@ -501,23 +540,27 @@ Create a file in `src/pages/`. That's the whole process — the route, the sitem
 
 ## Notes and known gaps
 
-- **Blog post bodies are placeholders.** Each one says so in its own text.
-  Thin content does not rank — aim for 800–1,500 useful words per article.
 - **Case studies are illustrative.** Structure and depth are right; the
   engagements are invented. Each carries a visible note saying so. Replace
   before launch.
 - **Hero stats (120+, 40+, 18) are illustrative** and should be real numbers.
-- **Job roles are list-only.** Each is a CMS entry with `JobPosting` schema,
-  but they don't have individual pages yet. Giving them their own URLs would
-  improve Google Jobs performance.
-- **`JobPosting` dates are generated at build time** (`datePosted` = build
-  date, `validThrough` = +3 months). Google may drop stale postings, so
-  rebuild periodically or promote these to real CMS fields.
+- **`JobPosting` dates fall back to build time** when a role has no
+  `datePosted` set in the CMS (`validThrough` = that date + 3 months).
+  Google may drop stale postings, so either set a real `datePosted` per
+  role (Careers collection → the role → "Date posted") or rebuild
+  periodically.
 - **`decap-cms-app` carries known advisories** in its transitive markdown
   dependencies (ReDoS in older `remark`/`trim` packages). These affect the
   admin bundle only — never the public site, which ships zero CMS JavaScript.
   Exploiting them requires an authenticated editor submitting crafted
   Markdown. Worth knowing; not a reason to avoid the CMS.
+- **The newsletter form collects addresses but doesn't send anything.**
+  `public/newsletter-handler.php` emails each signup to the same inbox as
+  the contact form — enough to start collecting a list, but there's no
+  actual email service behind it yet. See the upgrade-path comment at the
+  top of that file when you're ready to send a real newsletter.
+- **The contact form's spam protection is honeypot-only until you add
+  hCaptcha.** See "Optional: hCaptcha on the contact form" below.
 
 ---
 

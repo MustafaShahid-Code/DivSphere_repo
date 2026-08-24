@@ -1,0 +1,128 @@
+---
+/**
+ * NewsletterSignup.astro
+ * ────────────────────────
+ * Reusable email capture form, wired to public/newsletter-handler.php
+ * (same pattern as the contact form → contact-handler.php). Drop it
+ * anywhere — Footer.astro uses the compact inline variant, the
+ * Resources page uses the default stacked variant.
+ *
+ * `source` is passed through as a hidden field so the notification
+ * email says where the signup came from ("footer", "resources page").
+ */
+export interface Props {
+  compact?: boolean;
+  source?: string;
+  heading?: string;
+  body?: string;
+  id?: string;
+}
+
+const {
+  compact = false,
+  source = "website",
+  heading = "Get our field notes.",
+  body = "Occasional dispatches on delivery, cloud, and security — no spam, unsubscribe anytime.",
+  id = "newsletter",
+} = Astro.props;
+
+const formId = `${id}-form`;
+---
+
+<div class:list={["newsletter-signup", { "newsletter-compact": compact }]}>
+  <h4>{heading}</h4>
+  {body && <p class="newsletter-body">{body}</p>}
+
+  <div class="newsletter-status" id={`${id}-success`} role="status" aria-live="polite">
+    Thanks — you're on the list.
+  </div>
+  <div class="newsletter-status newsletter-status-error" id={`${id}-error`} role="alert">
+    Something went wrong. Try again, or email us at
+    <a href="mailto:info@divsphere.co">info@divsphere.co</a>.
+  </div>
+
+  <form
+    class="newsletter-form"
+    id={formId}
+    method="POST"
+    action="/newsletter-handler.php"
+  >
+    <p class="hp-field" aria-hidden="true">
+      <label>
+        Don't fill this in if you're human
+        <input name="bot-field" tabindex="-1" autocomplete="off" />
+      </label>
+    </p>
+    <input type="hidden" name="source" value={source} />
+
+    <label class="sr-only" for={`${id}-email`}>Email address</label>
+    <input
+      type="email"
+      id={`${id}-email`}
+      name="email"
+      placeholder="you@company.com"
+      required
+      autocomplete="email"
+    />
+    <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+  </form>
+</div>
+
+<script>
+  const forms = document.querySelectorAll<HTMLFormElement>(".newsletter-form");
+
+  forms.forEach((form) => {
+    const wrap = form.closest(".newsletter-signup");
+    const successBox = wrap?.querySelector(".newsletter-status:not(.newsletter-status-error)");
+    const errorBox = wrap?.querySelector(".newsletter-status-error");
+    const submitBtn = form.querySelector<HTMLButtonElement>("button[type=submit]");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorBox?.classList.remove("show");
+      successBox?.classList.remove("show");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Subscribing…";
+      }
+
+      try {
+        const data = new FormData(form);
+        const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+        if (isLocal) {
+          console.info(
+            "[newsletter form] Local mode — submission simulated, nothing was sent. " +
+              "Deploy to Hostinger (PHP handles delivery there) for real delivery.",
+            Object.fromEntries(data as any)
+          );
+          successBox?.classList.add("show");
+          form.reset();
+          return;
+        }
+
+        const res = await fetch(form.getAttribute("action") || "/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams(data as any).toString(),
+        });
+
+        if (!res.ok) throw new Error(`Submission failed: ${res.status}`);
+
+        successBox?.classList.add("show");
+        form.reset();
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: "newsletter_signup" });
+      } catch (err) {
+        console.error("Newsletter signup failed:", err);
+        errorBox?.classList.add("show");
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Subscribe";
+        }
+      }
+    });
+  });
+</script>

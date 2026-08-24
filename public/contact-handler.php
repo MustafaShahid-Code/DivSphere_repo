@@ -16,11 +16,21 @@
  *   Change $recipient below to the real inbox that should receive
  *   enquiries — it currently has no default on purpose, so a
  *   forgotten deploy fails loudly instead of silently emailing no one.
+ *
+ * OPTIONAL — hCaptcha:
+ *   $hcaptchaSecret is blank by default, which skips captcha
+ *   verification entirely (the honeypot field below is the only spam
+ *   defense until this is set). To turn it on: create a free hCaptcha
+ *   account, set PUBLIC_HCAPTCHA_SITE_KEY as a build-time env var (see
+ *   README → "Tracking and campaigns" for where that goes) so the
+ *   widget renders on the form, AND paste the matching secret key
+ *   below — both are required, the widget alone verifies nothing.
  */
 
 // ── Configuration ────────────────────────────────────────────
 $recipient = "info@divsphere.co"; // ← confirm this is the address you want enquiries sent to.
 $siteName  = "DivSphere";
+$hcaptchaSecret = ""; // ← paste your hCaptcha secret key here to enable verification.
 
 // ── Boilerplate ──────────────────────────────────────────────
 header("Content-Type: application/json; charset=utf-8");
@@ -40,6 +50,36 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 if (!empty($_POST["bot-field"])) {
     // Pretend success so a bot doesn't learn its submission was caught.
     respond(true);
+}
+
+// hCaptcha verification — only runs once $hcaptchaSecret above is set.
+// Until then this block is skipped entirely, so the form behaves
+// exactly as it did before hCaptcha support was added.
+if ($hcaptchaSecret !== "") {
+    $token = $_POST["h-captcha-response"] ?? "";
+    if ($token === "") {
+        respond(false, "Please complete the captcha.");
+    }
+
+    $verify = @file_get_contents("https://api.hcaptcha.com/siteverify", false, stream_context_create([
+        "http" => [
+            "method"  => "POST",
+            "header"  => "Content-Type: application/x-www-form-urlencoded\r\n",
+            "content" => http_build_query([
+                "secret"   => $hcaptchaSecret,
+                "response" => $token,
+            ]),
+            "timeout" => 8,
+        ],
+    ]));
+
+    $result = $verify ? json_decode($verify, true) : null;
+
+    // Fail closed: a network error talking to hCaptcha is treated the
+    // same as a failed captcha, not silently allowed through.
+    if (!$result || empty($result["success"])) {
+        respond(false, "Captcha verification failed. Please try again.");
+    }
 }
 
 $name    = trim($_POST["name"] ?? "");

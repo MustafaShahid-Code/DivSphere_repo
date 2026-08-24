@@ -149,6 +149,18 @@ const waDigits = site.contact.whatsapp.replace(/\D/g, "");
             <textarea id="fmessage" name="message" required></textarea>
           </div>
 
+          {
+            /*
+             * CAPTCHA — no-op until PUBLIC_HCAPTCHA_SITE_KEY is set (see
+             * site.ts → security.hcaptchaSiteKey). Blank by default, so
+             * this renders nothing and the honeypot above is the only
+             * spam defense, exactly as before this was added.
+             */
+            site.security.hcaptchaSiteKey && (
+              <div class="h-captcha" data-sitekey={site.security.hcaptchaSiteKey} />
+            )
+          }
+
           <button type="submit" class="btn btn-primary" id="submitBtn" style="align-self:flex-start;">
             Send message &rarr;
           </button>
@@ -157,6 +169,12 @@ const waDigits = site.contact.whatsapp.replace(/\D/g, "");
       </div>
     </div>
   </div>
+
+  {
+    site.security.hcaptchaSiteKey && (
+      <script src="https://js.hcaptcha.com/1/api.js" async defer />
+    )
+  }
 </BaseLayout>
 
 <script>

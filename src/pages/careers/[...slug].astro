@@ -1,0 +1,127 @@
+---
+import { getCollection, render } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { site } from "../../config/site";
+
+/**
+ * One static page per open role. The /careers listing still gives the
+ * overview, but each role having its own URL is what makes it eligible
+ * to be indexed and surfaced individually by Google for Jobs — a listing
+ * page with six roles bundled together doesn't do that.
+ */
+export const getStaticPaths: GetStaticPaths = async () => {
+  const items = await getCollection("careers", ({ data }) => !data.draft);
+  const sorted = items.sort((a, b) => a.data.order - b.data.order);
+
+  return sorted.map((item) => ({
+    params: { slug: item.id },
+    props: { item },
+  }));
+};
+
+const { item } = Astro.props;
+const { Content } = await render(item);
+const d = item.data;
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "Careers", url: "/careers" },
+  { name: d.title, url: `/careers/${item.id}` },
+];
+
+/**
+ * datePosted uses the CMS field when the role has one set; otherwise it
+ * falls back to build time. Setting a real datePosted per role (and
+ * refreshing it periodically) is what keeps a posting from reading as
+ * stale to Google over time — see the CMS field hint.
+ */
+const now = new Date();
+const datePosted = d.datePosted ?? now;
+const validThrough = new Date(datePosted.getFullYear(), datePosted.getMonth() + 3, datePosted.getDate());
+
+const schema = [
+  {
+    "@type": "JobPosting",
+    title: d.title,
+    description: d.seoDescription || `${d.title} — ${d.department} at ${site.name}. ${d.employmentType}, ${d.location}.`,
+    datePosted: datePosted.toISOString().split("T")[0],
+    validThrough: validThrough.toISOString().split("T")[0],
+    employmentType: d.employmentType.toUpperCase().replace(/[^A-Z]/g, "_"),
+    hiringOrganization: { "@type": "Organization", name: site.name, sameAs: site.url },
+    jobLocation: {
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: site.address.city,
+        addressCountry: site.address.country,
+      },
+    },
+    directApply: true,
+    url: `${site.url}/careers/${item.id}`,
+  },
+];
+---
+
+<BaseLayout
+  title={d.seoTitle || d.title}
+  description={d.seoDescription || `${d.title} — ${d.department} at ${site.name}. ${d.employmentType}, ${d.location}.`}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <article>
+    <div class="page-hero">
+      <div class="wrap">
+        <Breadcrumbs items={crumbs} />
+        <span class="eyebrow">{d.department}</span>
+        <h1>{d.title}</h1>
+        <p class="lede">
+          {d.employmentType} &middot; {d.location} &middot; {site.address.city}, {site.address.countryName}
+        </p>
+      </div>
+    </div>
+
+    <div class="wrap" style="padding:24px 0 64px;">
+      <div class="cs-layout">
+        <div class="prose">
+          <Content />
+        </div>
+
+        <aside class="cs-sidebar">
+          <div class="cs-cta">
+            <h2 style="font-size:1rem; margin-bottom:8px;">Interested?</h2>
+            <p style="font-size:0.87rem; color:var(--text-muted); margin-bottom:16px;">
+              Tell us a bit about yourself and where you'd fit. We reply within one business day.
+            </p>
+            <a href="/contact" class="btn btn-primary btn-sm">Apply now &rarr;</a>
+          </div>
+
+          <div class="cs-facts" style="margin-top:20px;">
+            <div class="cs-fact">
+              <span class="cs-fact-label">Department</span>
+              <span class="cs-fact-value">{d.department}</span>
+            </div>
+            <div class="cs-fact">
+              <span class="cs-fact-label">Employment type</span>
+              <span class="cs-fact-value">{d.employmentType}</span>
+            </div>
+            <div class="cs-fact">
+              <span class="cs-fact-label">Location</span>
+              <span class="cs-fact-value">{d.location}</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="wrap" style="padding:24px 0 96px;">
+      <p class="form-note">
+        Not quite the right role?
+        <a href="/careers" style="color:var(--accent); text-decoration:none;">
+          See all open roles &rarr;
+        </a>
+      </p>
+    </div>
+  </article>
+</BaseLayout>

@@ -372,9 +372,12 @@ collections:
           - { label: "05 — Design", value: "shape" }
           - { label: "06 — Quality & Security", value: "protect" }
           - { label: "07 — Support & Enablement", value: "sustain" }
-      - { name: "description", label: "Description", widget: "text", hint: "One or two sentences. Shown on the Services page." }
+      - { name: "description", label: "Description", widget: "text", hint: "One or two sentences. Shown on the Services page and as the summary on this service's own page." }
+      - { name: "seoTitle", label: "SEO title (optional)", widget: "string", required: false, hint: "Shorter title for Google. Under ~48 characters." }
+      - { name: "seoDescription", label: "SEO description (optional)", widget: "text", required: false, hint: "Overrides the description in search results. 120–160 characters." }
       - { name: "order", label: "Sort order", widget: "number", default: 99, value_type: "int" }
       - { name: "draft", label: "Draft (hidden from site)", widget: "boolean", default: false, required: false }
+      - { name: "body", label: "Full write-up", widget: "markdown", required: false, hint: "The dedicated page for this service — what's included, and when to bring us in. This is what ranks in search for this specific service." }
 
   # ── CASE STUDIES ──────────────────────────────────────────
   - name: "caseStudies"
@@ -471,5 +474,9 @@ collections:
       - { name: "department", label: "Department", widget: "string" }
       - { name: "employmentType", label: "Employment type", widget: "select", options: ["Full-time", "Part-time", "Contract", "Internship"], default: "Full-time" }
       - { name: "location", label: "Location", widget: "select", options: ["On-site", "Hybrid", "Remote-friendly", "Remote"], default: "On-site" }
+      - { name: "datePosted", label: "Date posted (optional)", widget: "datetime", required: false, hint: "Used in Google Jobs structured data. Leave blank to use the site's last build date — set a real date so the posting doesn't read as stale to Google." }
+      - { name: "seoTitle", label: "SEO title (optional)", widget: "string", required: false, hint: "Shorter title for Google. Under ~48 characters." }
+      - { name: "seoDescription", label: "SEO description (optional)", widget: "text", required: false, hint: "Overrides the generated description in search results. 120–160 characters." }
       - { name: "order", label: "Sort order", widget: "number", default: 99, value_type: "int" }
       - { name: "draft", label: "Draft (hidden from site)", widget: "boolean", default: false, required: false }
+      - { name: "body", label: "Full write-up", widget: "markdown", required: false, hint: "What you'll do, what we're looking for, what you get. This is what shows on this role's own page and what Google Jobs indexes." }

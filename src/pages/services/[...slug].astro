@@ -1,0 +1,125 @@
+---
+import { getCollection, render } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { site, clusters } from "../../config/site";
+
+/**
+ * One static page per service. The shared /services listing is still
+ * the primary entry point, but a dedicated page per service is what
+ * lets each one independently rank for its own high-intent search
+ * query ("ERP implementation Pakistan") instead of competing for
+ * relevance against twenty other services on one shared page.
+ */
+export const getStaticPaths: GetStaticPaths = async () => {
+  const items = await getCollection("services", ({ data }) => !data.draft);
+  const sorted = items.sort((a, b) => a.data.order - b.data.order);
+
+  return sorted.map((item) => {
+    const cluster = clusters.find((c) => c.id === item.data.cluster);
+    // Related: other services in the same capability cluster.
+    const related = sorted
+      .filter((s) => s.data.cluster === item.data.cluster && s.id !== item.id)
+      .slice(0, 3);
+
+    return {
+      params: { slug: item.id },
+      props: { item, cluster, related },
+    };
+  });
+};
+
+const { item, cluster, related } = Astro.props;
+const { Content } = await render(item);
+const d = item.data;
+
+const crumbs = [
+  { name: "Home", url: "/" },
+  { name: "Services", url: "/services" },
+  { name: d.title, url: `/services/${item.id}` },
+];
+
+const schema = [
+  {
+    "@type": "Service",
+    name: d.title,
+    description: d.seoDescription || d.description,
+    serviceType: cluster?.heading,
+    provider: { "@id": `${site.url}/#organization` },
+    areaServed: site.areaServed.map((a) => ({ "@type": "AdministrativeArea", name: a })),
+    url: `${site.url}/services/${item.id}`,
+  },
+];
+---
+
+<BaseLayout
+  title={d.seoTitle || d.title}
+  description={d.seoDescription || d.description}
+  breadcrumbs={crumbs}
+  schema={schema}
+>
+  <article>
+    <div class="page-hero">
+      <div class="wrap">
+        <Breadcrumbs items={crumbs} />
+        {cluster && <span class="eyebrow">{cluster.idx} &middot; {cluster.heading}</span>}
+        <h1>{d.title}</h1>
+        <p class="lede">{d.description}</p>
+      </div>
+    </div>
+
+    <div class="wrap" style="padding:24px 0 64px;">
+      <div class="cs-layout">
+        <div class="prose">
+          <Content />
+        </div>
+
+        <aside class="cs-sidebar">
+          <div class="cs-cta">
+            <h2 style="font-size:1rem; margin-bottom:8px;">Ready to talk about this?</h2>
+            <p style="font-size:0.87rem; color:var(--text-muted); margin-bottom:16px;">
+              Tell us what you're building. We reply within one business day.
+            </p>
+            <a href="/contact" class="btn btn-primary btn-sm">Start a project &rarr;</a>
+          </div>
+
+          {
+            cluster && (
+              <div class="cs-facts" style="margin-top:20px;">
+                <div class="cs-fact">
+                  <span class="cs-fact-label">Capability</span>
+                  <span class="cs-fact-value">{cluster.heading}</span>
+                </div>
+              </div>
+            )
+          }
+        </aside>
+      </div>
+    </div>
+
+    {
+      related.length > 0 && (
+        <div class="wrap" style="padding:24px 0 96px;">
+          <div class="section-head" style="margin-bottom:28px;">
+            <div>
+              <span class="eyebrow">More in {cluster?.heading}</span>
+              <h2 style="margin-top:14px; font-size:1.5rem;">Related services.</h2>
+            </div>
+            <a href="/services" class="btn btn-ghost">All services &rarr;</a>
+          </div>
+          <div class="case-grid">
+            {related.map((r) => (
+              <a href={`/services/${r.id}`} class="case-card">
+                <div class="case-body">
+                  <h3 style="font-size:1.05rem; font-family:var(--font-display);">{r.data.title}</h3>
+                  <p>{r.data.description}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </article>
+</BaseLayout>

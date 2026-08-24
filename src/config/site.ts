@@ -98,6 +98,21 @@ export const site = {
     /** Google Search Console HTML-tag verification token (optional) */
     googleSiteVerification: import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION || "",
   },
+
+  /**
+   * ── SPAM PROTECTION ──────────────────────────────────────
+   * hCaptcha on the contact form. Blank by default — the form works
+   * exactly as it does today (honeypot only) until this is set. Once
+   * you have an hCaptcha account, set PUBLIC_HCAPTCHA_SITE_KEY here
+   * (build-time env var) AND the matching secret key inside
+   * public/contact-handler.php (see the comment there) — both sides
+   * are required, since the site key alone only renders the widget;
+   * the secret is what actually verifies it server-side.
+   */
+  security: {
+    /** hCaptcha site key — public, safe to expose client-side. */
+    hcaptchaSiteKey: import.meta.env.PUBLIC_HCAPTCHA_SITE_KEY || "",
+  },
 } as const;
 
 /**
@@ -113,6 +128,7 @@ export const navigation = [
       { label: "Case Studies", href: "/case-studies" },
       { label: "Careers", href: "/careers" },
       { label: "Blog", href: "/blog" },
+      { label: "Resources", href: "/resources" },
     ],
   },
   { label: "Services", href: "/services" },
