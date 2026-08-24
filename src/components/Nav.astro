@@ -8,6 +8,7 @@
  */
 import { site, navigation } from "../config/site";
 import brand from "../data/brand.json";
+import ThemeToggle from "./ThemeToggle.astro";
 
 const path = Astro.url.pathname;
 
@@ -79,6 +80,8 @@ function isActive(href: string, children?: readonly { href: string }[]) {
         )
       }
     </nav>
+
+    <ThemeToggle />
 
     <a href="/contact" class="nav-cta desktop-only">Start a project</a>
 

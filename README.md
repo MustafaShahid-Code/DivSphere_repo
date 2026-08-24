@@ -88,7 +88,7 @@ npm run check    # type-check the project
 **Site Settings**
 - **Brand** — logo mark and favicon
 - **Contact Details** — primary/secondary phone numbers and the WhatsApp number, used sitewide (header, footer, Contact page, floating WhatsApp button)
-- **Theme** — five accent palettes
+- **Theme** — five accent palettes (this sets the brand color; light/dark mode is a separate, visitor-controlled toggle — see "Light/dark theme" below)
 - **Homepage** — hero copy, stat readout, every section heading, show/hide each section, process steps, industries, closing CTA
 - **About Page** — hero, values, milestones, practice areas
 - **Careers Page** — hero, benefits, section headings
@@ -105,6 +105,35 @@ Everything above is editable without touching code. Phone numbers and the
 WhatsApp number are also CMS-editable (Site Settings → Contact Details, see
 above). What's still code-only — company name, email address, physical
 address, and domain — lives in one file, `src/config/site.ts`.
+
+---
+
+## Light/dark theme
+
+There's a light/dark toggle in the header (both viewport sizes) and a
+matching floating button in the bottom-left corner of `/admin` — this one
+is per-visitor, not a CMS setting: each person's browser remembers their
+own choice (`localStorage`), and anyone who's never toggled it gets
+whichever their OS is set to, dark by default if neither is known.
+
+It's built entirely on CSS custom properties in `src/styles/global.css` —
+the dark values sit on `:root`, a full light override sits on
+`:root[data-theme="light"]`, and `ThemeToggle.astro` just flips that
+attribute. That's also why the admin panel re-themes for free: every rule
+in `src/styles/admin-theme.css` (which restyles Decap's editor UI) already
+reads from these same variables, so the one toggle covers both surfaces
+with no CMS-specific styling code.
+
+Two things worth knowing if you touch the color system later:
+- The five accent palettes (Site Settings → Theme) apply on top of
+  whichever mode is active — they're independent axes. A palette's raw
+  accent color is used for buttons and borders in both modes, but body
+  text/links use a separate `--accent-text` (and `--good-text` /
+  `--danger-text` for success/error states) that's automatically darkened
+  in light mode via `color-mix()`, since the bright palette colors don't
+  have enough contrast to read as text on a white background.
+- Any new color in `global.css` should go through a variable rather than
+  a hardcoded hex — that's what makes it theme-aware automatically.
 
 ---
 
@@ -491,6 +520,7 @@ src/
 │   ├── Nav.astro           ← Home / About ▾ / Services / Contact
 │   ├── Footer.astro        ← includes the newsletter signup band
 │   ├── Breadcrumbs.astro
+│   ├── ThemeToggle.astro   ← light/dark switch (nav + admin, see "Light/dark theme")
 │   ├── NewsletterSignup.astro ← reusable email-capture form
 │   ├── WhatsAppButton.astro
 │   ├── Analytics.astro     ← GTM, GA4, Meta, LinkedIn + Consent Mode

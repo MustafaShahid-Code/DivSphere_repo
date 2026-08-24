@@ -40,6 +40,7 @@ import { createHash } from "node:crypto";
 import { site, resolveTheme } from "../../config/site";
 import themeData from "../../data/theme.json";
 import brand from "../../data/brand.json";
+import ThemeToggle from "../../components/ThemeToggle.astro";
 
 import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/manrope";
@@ -73,6 +74,23 @@ const expectedHash = createHash("sha256")
 <!doctype html>
 <html lang="en" style={themeVars}>
   <head>
+    <!-- No-flash theme bootstrap — same mechanism as the public site,
+         see BaseLayout.astro for the full explanation. Kept first so
+         it runs before global.css / admin-theme.css paint. -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("ds-theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark";
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Never let the admin panel into search results. -->
@@ -153,6 +171,9 @@ const expectedHash = createHash("sha256")
 
     <!-- ============== Floating log out control ============== -->
     <button type="button" id="gateLogout" class="gate-logout" hidden>Log out</button>
+
+    <!-- ============== Light/dark theme toggle ============== -->
+    <ThemeToggle variant="floating" />
 
     <script define:vars={{ expectedHash, isLocalMode }} is:inline>
       window.__DS_ADMIN__ = { expectedHash, isLocalMode };
@@ -310,9 +331,9 @@ const expectedHash = createHash("sha256")
       }
 
       .login-error {
-        background: rgba(255, 92, 92, 0.1);
-        border: 1px solid rgba(255, 92, 92, 0.35);
-        color: #ff9d9d;
+        background: var(--danger-soft);
+        border: 1px solid var(--danger-line);
+        color: var(--danger-text);
         padding: 11px 14px;
         border-radius: 8px;
         font-size: 0.88rem;

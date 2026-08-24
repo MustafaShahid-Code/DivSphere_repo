@@ -52,7 +52,45 @@ const props = Astro.props;
 <!doctype html>
 <html lang={site.lang} style={themeVars}>
   <head>
+    <!--
+      No-flash theme bootstrap. Runs before any CSS is applied so a
+      returning visitor's light/dark choice (or their OS preference,
+      if they've never toggled) is set before first paint — without
+      this, the page would flash the default dark theme and then
+      snap to light a moment later. Kept as the very first thing in
+      <head>, ahead of even <meta charset>, specifically so it runs
+      before the stylesheet Astro injects. See ThemeToggle.astro for
+      the click handler that writes the "ds-theme" key this reads.
+    -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("ds-theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : matchMedia("(prefers-color-scheme: light)").matches
+                ? "light"
+                : "dark";
+          document.documentElement.setAttribute("data-theme", theme);
+          // Hardcoded to match --ground in both blocks of global.css —
+          // can't read the CSS custom property yet, the stylesheet
+          // hasn't loaded at this point.
+          document.documentElement.dataset.themeColor = theme === "light" ? "#f6f4ef" : "#0b0f14";
+        } catch (e) {}
+      })();
+    </script>
     <SEO {...props} />
+    <script is:inline>
+      // Sync the browser-chrome tint meta tag to the theme resolved by
+      // the bootstrap script above, now that SEO.astro's markup (which
+      // includes the default-dark <meta name="theme-color">) exists.
+      (function () {
+        var meta = document.querySelector('meta[name="theme-color"]');
+        var color = document.documentElement.dataset.themeColor;
+        if (meta && color) meta.setAttribute("content", color);
+      })();
+    </script>
     <Analytics />
   </head>
   <body>

@@ -1,0 +1,119 @@
+---
+/**
+ * ThemeToggle.astro — the light/dark switch, used in both Nav.astro
+ * (public site) and admin/index.astro (CMS).
+ *
+ * How the theme is actually applied: this component only flips
+ * data-theme on <html> and remembers the choice — the colors
+ * themselves live entirely in CSS custom properties (see the THEME /
+ * LIGHT MODE blocks at the top of global.css). Because admin-theme.css
+ * restyles the whole Decap CMS UI through those same variables, this
+ * one toggle re-themes the CMS editor too, with no CMS-specific code.
+ *
+ * No-flash bootstrap: this component only handles the CLICK. The
+ * initial theme (read from localStorage, falling back to the OS
+ * preference) is set by a separate inline script placed at the very
+ * top of <head> in BaseLayout.astro and admin/index.astro — it has to
+ * run before the stylesheet paints, before this component's own
+ * script has even loaded.
+ */
+export interface Props {
+  /** "nav" sits inline in the header; "floating" is a fixed corner button (used on /admin). */
+  variant?: "nav" | "floating";
+}
+const { variant = "nav" } = Astro.props;
+---
+
+<button
+  type="button"
+  id="themeToggle"
+  class:list={["theme-toggle", { "theme-toggle-floating": variant === "floating" }]}
+  aria-label="Switch between light and dark theme"
+>
+  <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8" />
+    <path
+      d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+    />
+  </svg>
+  <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M20.5 14.4A8.5 8.5 0 1 1 9.6 3.5a6.8 6.8 0 0 0 10.9 10.9Z"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linejoin="round"
+    />
+  </svg>
+</button>
+
+<script>
+  const STORAGE_KEY = "ds-theme";
+
+  document.querySelectorAll<HTMLButtonElement>("#themeToggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const isLight = document.documentElement.getAttribute("data-theme") === "light";
+      const next = isLight ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // Private browsing / storage disabled — the toggle still works
+        // for this page view, it just won't be remembered next visit.
+      }
+
+      // Keep the browser chrome (address bar tint on mobile) in sync.
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) {
+        meta.setAttribute(
+          "content",
+          next === "light"
+            ? getComputedStyle(document.documentElement).getPropertyValue("--ground").trim() || "#f6f4ef"
+            : "#0b0f14"
+        );
+      }
+    });
+  });
+</script>
+
+<style>
+  .theme-toggle {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .theme-toggle:hover {
+    color: var(--text);
+    border-color: var(--accent-line);
+    background: var(--surface);
+  }
+
+  /* Dark mode (default, no data-theme or data-theme="dark"): show the
+     sun — click it to switch TO light. Light mode: show the moon. */
+  :root:not([data-theme="light"]) .theme-toggle .icon-moon {
+    display: none;
+  }
+  :root[data-theme="light"] .theme-toggle .icon-sun {
+    display: none;
+  }
+
+  .theme-toggle-floating {
+    position: fixed;
+    bottom: 18px;
+    left: 18px;
+    z-index: 40;
+    background: var(--surface-raised);
+    box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  }
+</style>

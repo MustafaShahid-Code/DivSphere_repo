@@ -321,9 +321,9 @@
 }
 
 [class*="FileWidgetButtonRemove"] {
-  background: rgba(255, 92, 92, 0.12) !important;
-  color: #ff9d9d !important;
-  border: 1px solid rgba(255, 92, 92, 0.35) !important;
+  background: var(--danger-soft) !important;
+  color: var(--danger-text) !important;
+  border: 1px solid var(--danger-line) !important;
 }
 
 /* Markdown / rich-text (Slate) editor surface */
@@ -379,7 +379,7 @@
 }
 
 [class*="ErrorMessage"] {
-  color: #ff9d9d !important;
+  color: var(--danger-text) !important;
 }
 
 /* ============== Modals (media library, etc.) ============== */
