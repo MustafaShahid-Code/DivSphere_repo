@@ -43,8 +43,8 @@ define('DB_PASS', '');
 //
 // Paste the long $2y$... string it prints below. The plaintext
 // password itself is never stored anywhere.
-define('INBOX_USER', '');
-define('INBOX_PASSWORD_HASH', '');
+define('INBOX_USER', 'MustafaShahid-Code');
+define('INBOX_PASSWORD_HASH', 'Hulk@78692');
 
 // ── SMTP (for sending replies to customers) ──────────────────
 // Recommended: use the mailbox you already have on this domain
