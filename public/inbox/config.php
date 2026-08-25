@@ -27,9 +27,9 @@
 // from the PHP script's point of view, even though phpMyAdmin shows a
 // different-looking hostname in its own URL.
 define('DB_HOST', 'localhost');
-define('DB_NAME', '');               // e.g. u123456789_divsphere
-define('DB_USER', '');               // e.g. u123456789_dsadmin
-define('DB_PASS', '');
+define('DB_NAME', 'u114972779_div');               // e.g. u123456789_divsphere
+define('DB_USER', 'Hulk');               // e.g. u123456789_dsadmin
+define('DB_PASS', 'Hulk@78692');
 
 // ── Inbox login ───────────────────────────────────────────────
 // Use the SAME username/password you already use for the CMS admin
