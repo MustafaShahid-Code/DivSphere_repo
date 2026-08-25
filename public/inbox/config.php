@@ -4,7 +4,7 @@
  * configuration.
  *
  * HOW TO USE
- * ──────────
+ * ─────────
  *   1. Copy this file to `config.php` in this same folder.
  *   2. Fill in every value below.
  *   3. Upload `config.php` directly to the server — do NOT commit it
