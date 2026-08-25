@@ -44,7 +44,7 @@ define('DB_PASS', 'Hulk@78692');
 // Paste the long $2y$... string it prints below. The plaintext
 // password itself is never stored anywhere.
 define('INBOX_USER', 'info@divsphere.co');
-define('INBOX_PASSWORD_HASH', '3a8d93177adae7b6ef737d8c92d7e0db');
+define('INBOX_PASSWORD_HASH', '$2y$12$rFFF5yvf13Be6L1wdjz4iuxfRQFA2zR/kiDfqHOQvtUbvlqmTWwAS');
 
 // ── SMTP (for sending replies to customers) ──────────────────
 // Recommended: use the mailbox you already have on this domain
