@@ -43,8 +43,8 @@ define('DB_PASS', 'Hulk@78692');
 //
 // Paste the long $2y$... string it prints below. The plaintext
 // password itself is never stored anywhere.
-define('INBOX_USER', '');
-define('INBOX_PASSWORD_HASH', '');
+define('INBOX_USER', 'info@divsphere.co');
+define('INBOX_PASSWORD_HASH', '3a8d93177adae7b6ef737d8c92d7e0db');
 
 // ── SMTP (for sending replies to customers) ──────────────────
 // Recommended: use the mailbox you already have on this domain
@@ -54,10 +54,10 @@ define('INBOX_PASSWORD_HASH', '');
 //   Host: smtp.hostinger.com   Port: 465 (ssl) or 587 (tls)
 // Alternatively, a transactional provider (Resend, SendGrid, etc.)
 // works the same way — just use the SMTP details they give you.
-define('SMTP_HOST', '');
+define('SMTP_HOST', 'smtp.hostinger.com');
 define('SMTP_PORT', 587);
-define('SMTP_USER', '');             // usually the full mailbox address
-define('SMTP_PASS', '');
+define('SMTP_USER', 'info@divsphere.co');             // usually the full mailbox address
+define('SMTP_PASS', '!nfO@123');
 define('SMTP_ENCRYPTION', 'tls');    // 'tls' or 'ssl'
 define('SMTP_FROM_EMAIL', 'info@divsphere.co');
 define('SMTP_FROM_NAME', 'DivSphere');
