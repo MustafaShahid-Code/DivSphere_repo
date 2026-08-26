@@ -1,0 +1,15 @@
+# DivSphere — robots.txt
+
+User-agent: *
+Allow: /
+
+# The CMS admin panel holds no public content.
+Disallow: /admin/
+
+# Common tracking parameters — prevents duplicate-content crawling
+# of the same page across ad campaigns.
+Disallow: /*?*utm_
+Disallow: /*?*gclid=
+Disallow: /*?*fbclid=
+
+Sitemap: https://divsphere.co/sitemap-index.xml
