@@ -349,6 +349,7 @@ const themeVars = [
             <div class="detail-message">${escapeHtml(inq.message)}</div>
             <div class="detail-thread" id="detailThread"></div>
             <div class="reply-box">
+              <span class="reply-box-label">Reply to ${escapeHtml(inq.name)}</span>
               <textarea id="replyText" placeholder="Write a reply…" rows="5"></textarea>
               <div class="reply-actions">
                 <span class="reply-status" id="replyStatus"></span>
@@ -362,7 +363,7 @@ const themeVars = [
         if (thread && replies.length) {
           thread.innerHTML = replies.map((r: any) => `
             <div class="reply-item ${r.sent_ok ? "" : "reply-failed"}">
-              <div class="reply-item-meta">${r.sent_ok ? "Replied" : "Failed to send"} &middot; ${fmtDate(r.sent_at)}</div>
+              <div class="reply-item-meta">${r.sent_ok ? "You replied" : "Failed to send"} &middot; ${fmtDate(r.sent_at)}</div>
               <div class="reply-item-body">${escapeHtml(r.reply_body)}</div>
             </div>
           `).join("");
@@ -582,16 +583,21 @@ const themeVars = [
         cursor: pointer; transition: background 0.12s ease, padding-left 0.12s ease;
       }
       .inbox-row:hover { background: var(--surface-raised); }
+      .inbox-row.unread { background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
       .inbox-row.active { background: var(--accent-soft); border-left: 3px solid var(--accent); padding-left: 13px; }
       .inbox-row-avatar {
         flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
-        background: var(--accent-soft); color: var(--accent-text); border: 1px solid var(--accent-line);
+        background: var(--accent); color: var(--on-accent);
         display: flex; align-items: center; justify-content: center;
         font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
       }
       .inbox-row-body { min-width: 0; flex: 1; }
-      .inbox-row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-      .inbox-row-name { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+      .inbox-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+      .inbox-row-name {
+        font-weight: 700; font-size: 0.92rem; color: var(--text);
+        flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
       .inbox-row.unread .inbox-row-name::before {
         content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
         background: var(--accent); margin-right: 7px; vertical-align: middle;
@@ -614,8 +620,12 @@ const themeVars = [
       .detail-head-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 8px; }
       .detail-avatar {
         flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; margin-top: 2px;
-        background: var(--accent-soft); color: var(--accent-text); border: 1px solid var(--accent-line);
+        background: var(--accent); color: var(--on-accent);
         display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 700;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      }
+      .detail-head {
+        border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 24px;
       }
       .detail-head h2 { font-size: 1.3rem; margin: 0 0 8px; }
       .detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.88rem; margin-bottom: 4px; }
@@ -624,20 +634,28 @@ const themeVars = [
         background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--accent-text);
         border-radius: 6px; padding: 2px 9px; font-size: 0.76rem; font-weight: 700;
       }
-      .detail-date { color: var(--text-faint); font-size: 0.78rem; margin-bottom: 24px; }
+      .detail-date { color: var(--text-faint); font-size: 0.78rem; margin: 0; }
       .detail-message {
         background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
         padding: 20px; white-space: pre-wrap; line-height: 1.6; color: var(--text); margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       }
 
       .detail-thread { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-      .reply-item { background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 10px; padding: 16px; }
-      .reply-item.reply-failed { background: var(--danger-soft); border-color: var(--danger-line); }
+      .reply-item {
+        background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+        border-radius: 8px; padding: 14px 16px;
+      }
+      .reply-item.reply-failed { background: var(--danger-soft); border-color: var(--danger-line); border-left-color: var(--danger-text); }
       .reply-item-meta { font-size: 0.74rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
       .reply-item-body { white-space: pre-wrap; line-height: 1.6; color: var(--text); }
 
+      .reply-box {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px;
+      }
+      .reply-box-label { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; display: block; }
       .reply-box textarea {
-        width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+        width: 100%; background: var(--ground); border: 1px solid var(--line); border-radius: 10px;
         padding: 14px; color: var(--text); font-family: var(--font-body); font-size: 0.95rem;
         line-height: 1.5; resize: vertical;
       }
